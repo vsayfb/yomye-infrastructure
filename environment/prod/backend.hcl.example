@@ -1,0 +1,3 @@
+bucket = "<state-bucket>"
+key    = "environments/prod/terraform.tfstate"
+region = "<aws-region>"
