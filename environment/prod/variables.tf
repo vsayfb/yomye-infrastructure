@@ -119,12 +119,17 @@ variable "gemini_ai_secret_name" {
   type        = string
 }
 
-variable "qwen_ai_secret_name" {
+variable "open_router_ai_secret_name" {
   description = "Attached to worker only."
   type        = string
 }
 
 variable "nvidia_ai_secret_name" {
+  description = "Attached to worker only."
+  type        = string
+}
+
+variable "mistral_ai_secret_name" {
   description = "Attached to worker only."
   type        = string
 }
@@ -145,11 +150,15 @@ variable "gemini_model" {
   type = string
 }
 
-variable "qwen_model" {
+variable "open_router_model" {
   type = string
 }
 
-variable "qwen_base_url" {
+variable "open_router_base_url" {
+  type = string
+}
+
+variable "nvidia_model" {
   type = string
 }
 
@@ -157,7 +166,11 @@ variable "nvidia_base_url" {
   type = string
 }
 
-variable "nvidia_model" {
+variable "mistral_ai_model" {
+  type = string
+}
+
+variable "mistral_ai_endpoint" {
   type = string
 }
 
@@ -167,5 +180,21 @@ variable "cloudinary_api_key" {
 }
 
 variable "cloudinary_cloud_name" {
+  type = string
+}
+
+variable "r2_account_id" {
+  type = string
+}
+
+variable "r2_access_key_id" {
+  type = string
+}
+
+variable "r2_secret_access_key" {
+  type = string
+}
+
+variable "r2_bucket" {
   type = string
 }

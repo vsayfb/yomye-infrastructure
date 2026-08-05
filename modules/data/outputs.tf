@@ -113,12 +113,16 @@ output "groq_ai_secret_read_policy_arn" {
 output "gemini_ai_secret_read_policy_arn" {
   value = aws_iam_policy.gemini_ai_secret_read.arn
 }
-output "qwen_ai_secret_read_policy_arn" {
-  value = aws_iam_policy.qwen_ai_secret_read.arn
+output "open_router_ai_secret_read_policy_arn" {
+  value = aws_iam_policy.open_router_ai_secret_read.arn
 }
 
 output "nvidia_ai_secret_read_policy_arn" {
   value = aws_iam_policy.nvidia_ai_secret_read.arn
+}
+
+output "mistral_ai_secret_read_policy_arn" {
+  value = aws_iam_policy.mistral_ai_secret_read.arn
 }
 
 output "cloudinary_api_secret_read_policy_arn" {

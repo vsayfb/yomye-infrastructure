@@ -80,20 +80,20 @@ resource "aws_ssm_parameter" "groq_ai_model" {
   tags = local.common_tags
 }
 
-resource "aws_ssm_parameter" "qwen_ai_model" {
-  name = "/${local.name_prefix}/app/qwen-ai-model"
+resource "aws_ssm_parameter" "open_router_ai_model" {
+  name = "/${local.name_prefix}/app/open_router-ai-model"
   type = "String"
 
-  value = var.qwen_ai_model
+  value = var.open_router_ai_model
 
   tags = local.common_tags
 }
 
-resource "aws_ssm_parameter" "qwen_ai_endpoint" {
-  name = "/${local.name_prefix}/app/qwen-ai-endpoint"
+resource "aws_ssm_parameter" "open_router_ai_endpoint" {
+  name = "/${local.name_prefix}/app/open_router-ai-endpoint"
   type = "String"
 
-  value = var.qwen_ai_endpoint
+  value = var.open_router_ai_endpoint
 
   tags = local.common_tags
 }
@@ -126,6 +126,25 @@ resource "aws_ssm_parameter" "nvidia_ai_endpoint" {
   tags = local.common_tags
 }
 
+resource "aws_ssm_parameter" "mistral_ai_model" {
+  name = "/${local.name_prefix}/app/mistral-ai-model"
+  type = "String"
+
+  value = var.mistral_ai_model
+
+  tags = local.common_tags
+}
+
+resource "aws_ssm_parameter" "mistral_ai_endpoint" {
+  name = "/${local.name_prefix}/app/mistral-ai-endpoint"
+  type = "String"
+
+  value = var.mistral_ai_endpoint
+
+  tags = local.common_tags
+}
+
+
 resource "aws_ssm_parameter" "cloudinary_api_key" {
   name = "/${local.name_prefix}/app/cloudinary-api-key"
   type = "String"
@@ -140,6 +159,38 @@ resource "aws_ssm_parameter" "cloudinary_cloud_name" {
   type = "String"
 
   value = var.cloudinary_cloud_name
+
+  tags = local.common_tags
+}
+
+resource "aws_ssm_parameter" "r2_account_id" {
+  name  = "/${local.name_prefix}/app/r2-account-id"
+  type  = "String"
+  value = var.r2_account_id
+
+  tags = local.common_tags
+}
+
+resource "aws_ssm_parameter" "r2_account_id" {
+  name  = "/${local.name_prefix}/app/r2-access-key-id"
+  type  = "String"
+  value = var.r2_access_key_id
+
+  tags = local.common_tags
+}
+
+resource "aws_ssm_parameter" "r2_account_id" {
+  name  = "/${local.name_prefix}/app/r2-secret-access-key"
+  type  = "String"
+  value = var.r2_secret_access_key
+
+  tags = local.common_tags
+}
+
+resource "aws_ssm_parameter" "r2_bucket" {
+  name  = "/${local.name_prefix}/app/r2-bucket"
+  type  = "String"
+  value = var.r2_bucket
 
   tags = local.common_tags
 }
@@ -175,8 +226,13 @@ data "aws_ssm_parameter" "gemini_ai_secret" {
   with_decryption = false
 }
 
-data "aws_ssm_parameter" "qwen_ai_secret" {
-  name            = var.qwen_ai_secret_name
+data "aws_ssm_parameter" "open_router_ai_secret" {
+  name            = var.open_router_ai_secret_name
+  with_decryption = false
+}
+
+data "aws_ssm_parameter" "mistral_ai_secret" {
+  name            = var.mistral_ai_secret_name
   with_decryption = false
 }
 
@@ -213,10 +269,13 @@ resource "aws_iam_policy" "app_config_read" {
           aws_ssm_parameter.groq_ai_endpoint.arn,
           aws_ssm_parameter.nvidia_ai_model.arn,
           aws_ssm_parameter.nvidia_ai_endpoint.arn,
-          aws_ssm_parameter.qwen_ai_model.arn,
-          aws_ssm_parameter.qwen_ai_endpoint.arn,
+          aws_ssm_parameter.open_router_ai_model.arn,
+          aws_ssm_parameter.open_router_ai_endpoint.arn,
+          aws_ssm_parameter.mistral_ai_model.arn,
+          aws_ssm_parameter.mistral_ai_endpoint.arn,
           aws_ssm_parameter.gemini_ai_model.arn,
           aws_ssm_parameter.rds_secret_arn.arn,
+
         ]
       }
     ]
@@ -369,8 +428,8 @@ resource "aws_iam_policy" "cloudinary_api_secret_read" {
 }
 
 
-resource "aws_iam_policy" "qwen_ai_secret_read" {
-  name        = "${local.name_prefix}-qwen-ai-secret-read"
+resource "aws_iam_policy" "open_router_ai_secret_read" {
+  name        = "${local.name_prefix}-open_router-ai-secret-read"
   description = "Read-only access to the OpenRouter API Key"
 
   policy = jsonencode({
@@ -379,7 +438,7 @@ resource "aws_iam_policy" "qwen_ai_secret_read" {
       {
         Effect   = "Allow"
         Action   = ["ssm:GetParameter"]
-        Resource = data.aws_ssm_parameter.qwen_ai_secret.arn
+        Resource = data.aws_ssm_parameter.open_router_ai_secret.arn
       },
       {
         Effect   = "Allow"
@@ -391,4 +450,29 @@ resource "aws_iam_policy" "qwen_ai_secret_read" {
 
   tags = local.common_tags
 }
+
+resource "aws_iam_policy" "mistral_ai_secret_read" {
+  name        = "${local.name_prefix}-mistral-ai-secret-read"
+  description = "Read-only access to the Mistral API Key"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameter"]
+        Resource = data.aws_ssm_parameter.mistral_ai_secret.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt"]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = local.common_tags
+}
+
+
 

@@ -1,18 +1,59 @@
-project_name                                  = ""
-name_prefix                                   = ""
-aws_region                                    = ""
-azs                                           = ["", ""]
-db_name                                       = ""
-grafana_cloud_opamp_auth_token_parameter_name = ""
-grafana_cloud_opamp_endpoint                  = ""
-firebase_credentials_secret_name              = ""
-grafana_cloud_otlp_write_key_parameter_name   = ""
-github_org                                    = ""
-github_repos                                  = ["", "", "", ""]
-google_client_id                              = ""
-jwt_secret_arn                                = ""
-mongo_db_name                                 = ""
-mongo_db_uri_secret_name                      = ""
-groq_ai_secret_name                           = ""
-groq_ai_endpoint                              = ""
-groq_ai_model                                 = ""
+project_name = "Yövmiye"      # free text, whatever you've been calling it
+name_prefix  = "yevmiye"      # confirmed from every resource name we've seen (yevmiye-*)
+aws_region   = "eu-central-1" # confirmed, used throughout
+environment  = "staging"
+
+azs = ["eu-central-1a", "eu-central-1b"] # confirmed from earlier terraform.tfvars you showed
+
+db_name = "yevmiye" # or whatever you actually set the DB name to at RDS apply time
+
+# --- SSM parameter NAMES you create manually via `aws ssm put-parameter --type SecureString`
+# You get to choose these strings - they just need to match exactly what you actually create.
+grafana_cloud_opamp_auth_token_parameter_name = "/yevmiye/staging/otlp-auth-token"      # from your earlier put-parameter command
+grafana_cloud_otlp_write_key_parameter_name   = "/yevmiye/staging/otlp-write-key"       # same
+firebase_credentials_secret_name              = "/yevmiye/staging/firebase-credentials" # from your earlier get-secret-value check - confirm exact casing/slash
+jwt_secret_name                               = "/yevmiye/staging/jwt-secret"           # pick a name, create it, match it here
+mongo_db_uri_secret_name                      = "/yevmiye/staging/mongo-db-uri"         # matches what showed in your list-secrets output earlier
+groq_ai_secret_name                           = "/yevmiye/staging/groq-api-key"         # same
+gemini_ai_secret_name                         = "/yevmiye/staging/gemini-api-key"       # same
+open_router_ai_secret_name                    = "/yevmiye/staging/open_router-api-key"  # same
+nvidia_ai_secret_name                         = "/yevmiye/staging/nvidia-api-key"       # same
+cloudinary_api_secret_name                    = "/yevmiye/staging/cloudinary-api-secret"
+
+# --- Real, non-secret config
+grafana_cloud_opamp_endpoint = "https://fleet-management-prod-011.grafana.net" # from the Grafana Cloud quickstart, minus /v1/opamp (bootstrap.sh.tpl appends that)
+
+github_org = "vsayfb"
+github_repos = [
+  "yevmiye-core",
+  "yevmiye-chat",
+  "yevmiye-worker",
+  "yevmiye-notification"
+]
+github_repo_env_name = "production"
+
+google_client_id = "792578760046-fmtg9tlr0fhm73ajuk2l60379ffbkpu6.apps.googleusercontent.com" # from the original dev .env you pasted at the very start
+
+mongo_db_name = "yevmiye" # matches your original local dev DB_NAME - confirm this is still the intended prod DB name, not just copied from dev
+
+groq_ai_endpoint = "" # e.g. https://api.groq.com/openai/v1 - confirm against Groq's actual docs
+groq_ai_model    = ""                               # whatever model you're actually calling
+
+gemini_model = "gemini-3.5-flash-lite"
+
+open_router_model    = ""
+open_router_base_url = ""
+
+nvidia_base_url = ""
+nvidia_model    = ""
+
+mistral_ai_endpoint = ""
+mistral_ai_model    = ""
+
+cloudinary_api_key    = ""
+cloudinary_cloud_name = ""
+
+r2_account_id        = ""
+r2_access_key_id     = ""
+r2_secret_access_key = ""
+r2_bucket            = ""

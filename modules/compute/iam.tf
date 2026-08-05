@@ -83,9 +83,9 @@ resource "aws_iam_role_policy_attachment" "gemini_ai_secret_read" {
   policy_arn = var.gemini_ai_secret_read_policy_arn
 }
 
-resource "aws_iam_role_policy_attachment" "qwen_ai_secret_read" {
+resource "aws_iam_role_policy_attachment" "open_router_ai_secret_read" {
   role       = aws_iam_role.worker.name
-  policy_arn = var.qwen_ai_secret_read_policy_arn
+  policy_arn = var.open_router_ai_secret_read_policy_arn
 }
 
 resource "aws_iam_role_policy_attachment" "nvidia_ai_secret_read" {

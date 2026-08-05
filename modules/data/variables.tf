@@ -143,11 +143,15 @@ variable "groq_ai_model" {
   type = string
 }
 
-variable "qwen_ai_endpoint" {
+variable "mistral_ai_endpoint" {
   type = string
 }
 
-variable "qwen_ai_model" {
+variable "open_router_ai_endpoint" {
+  type = string
+}
+
+variable "open_router_ai_model" {
   type = string
 }
 
@@ -163,6 +167,10 @@ variable "nvidia_ai_model" {
   type = string
 }
 
+variable "mistral_ai_model" {
+  type = string
+}
+
 variable "cloudinary_cloud_name" {
   type = string
 }
@@ -171,6 +179,21 @@ variable "cloudinary_api_key" {
   type = string
 }
 
+variable "r2_account_id" {
+  type = string
+}
+
+variable "r2_access_key_id" {
+  type = string
+}
+
+variable "r2_secret_access_key" {
+  type = string
+}
+
+variable "r2_bucket" {
+  type = string
+}
 
 variable "mongo_db_uri_secret_name" {
   description = "Name of the SSM SecureString parameter holding the MongoDB Atlas connection URI (migrated from Secrets Manager)."
@@ -187,13 +210,18 @@ variable "gemini_ai_secret_name" {
   type        = string
 }
 
-variable "qwen_ai_secret_name" {
-  description = "Name of the SSM SecureString parameter holding the Qwen API Key (migrated from Secrets Manager)."
+variable "open_router_ai_secret_name" {
+  description = "Name of the SSM SecureString parameter holding the OpenRouter API Key (migrated from Secrets Manager)."
   type        = string
 }
 
 variable "nvidia_ai_secret_name" {
   description = "Name of the SSM SecureString parameter holding the Nvidia API Key (migrated from Secrets Manager)."
+  type        = string
+}
+
+variable "mistral_ai_secret_name" {
+  description = "Name of the SSM SecureString parameter holding the Mistral API Key (migrated from Secrets Manager)."
   type        = string
 }
 

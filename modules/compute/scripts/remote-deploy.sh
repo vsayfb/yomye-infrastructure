@@ -44,7 +44,7 @@ Type=simple
 WorkingDirectory=${CURRENT_LINK}
 ExecStart=${CURRENT_LINK}/${BINARY_NAME}
 
-Environment=APP_ENV=production
+Environment=APP_ENV=staging
 Environment=AWS_REGION=eu-central-1
 Environment=OTEL_COLLECTOR_ADDR=localhost:4317
 

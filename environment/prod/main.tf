@@ -9,19 +9,21 @@ module "network" {
 module "data" {
   source = "../../modules/data"
 
-  name_prefix        = var.name_prefix
-  private_subnet_ids = module.network.private_subnet_ids
-  rds_sg_id          = module.network.rds_sg_id
-  compute_az         = var.azs[0]
-  db_name            = var.db_name
-  mongo_db_name      = var.mongo_db_name
-  groq_ai_endpoint   = var.groq_ai_endpoint
-  groq_ai_model      = var.groq_ai_model
-  qwen_ai_endpoint   = var.qwen_base_url
-  qwen_ai_model      = var.qwen_model
-  gemini_ai_model    = var.gemini_model
-  nvidia_ai_endpoint = var.nvidia_base_url
-  nvidia_ai_model    = var.nvidia_model
+  name_prefix             = var.name_prefix
+  private_subnet_ids      = module.network.private_subnet_ids
+  rds_sg_id               = module.network.rds_sg_id
+  compute_az              = var.azs[0]
+  db_name                 = var.db_name
+  mongo_db_name           = var.mongo_db_name
+  groq_ai_endpoint        = var.groq_ai_endpoint
+  groq_ai_model           = var.groq_ai_model
+  open_router_ai_endpoint = var.open_router_base_url
+  open_router_ai_model    = var.open_router_model
+  gemini_ai_model         = var.gemini_model
+  nvidia_ai_endpoint      = var.nvidia_base_url
+  nvidia_ai_model         = var.nvidia_model
+  mistral_ai_model        = var.mistral_ai_model
+  mistral_ai_endpoint     = var.mistral_ai_endpoint
 
   db_allocated_storage       = var.db_allocated_storage
   db_backup_retention_days   = var.db_backup_retention_days
@@ -29,12 +31,19 @@ module "data" {
   jwt_secret_name            = var.jwt_secret_name
   mongo_db_uri_secret_name   = var.mongo_db_uri_secret_name
   groq_ai_secret_name        = var.groq_ai_secret_name
-  qwen_ai_secret_name        = var.qwen_ai_secret_name
+  open_router_ai_secret_name = var.open_router_ai_secret_name
   nvidia_ai_secret_name      = var.nvidia_ai_secret_name
   gemini_ai_secret_name      = var.gemini_ai_secret_name
+  mistral_ai_secret_name     = var.mistral_ai_secret_name
+
   cloudinary_api_key         = var.cloudinary_api_key
   cloudinary_cloud_name      = var.cloudinary_cloud_name
   cloudinary_api_secret_name = var.cloudinary_api_secret_name
+
+  r2_access_key_id     = var.r2_access_key_id
+  r2_bucket            = var.r2_bucket
+  r2_secret_access_key = var.r2_secret_access_key
+  r2_account_id        = var.r2_account_id
 }
 
 module "compute" {
@@ -59,12 +68,13 @@ module "compute" {
   groq_ai_secret_read_policy_arn        = module.data.groq_ai_secret_read_policy_arn
   nvidia_ai_secret_read_policy_arn      = module.data.nvidia_ai_secret_read_policy_arn
   gemini_ai_secret_read_policy_arn      = module.data.gemini_ai_secret_read_policy_arn
-  qwen_ai_secret_read_policy_arn        = module.data.qwen_ai_secret_read_policy_arn
+  open_router_ai_secret_read_policy_arn = module.data.open_router_ai_secret_read_policy_arn
   cloudinary_api_secret_read_policy_arn = module.data.cloudinary_api_secret_read_policy_arn
   opamp_auth_token_parameter_name       = var.grafana_cloud_opamp_auth_token_parameter_name
   opamp_endpoint_parameter_name         = module.observability.opamp_endpoint_parameter_name
   observability_read_policy_arn         = module.observability.observability_read_policy_arn
   otlp_write_key_parameter_name         = var.grafana_cloud_otlp_write_key_parameter_name
+
 
   app_deployments_read_policy_arn = module.deploy.app_deployments_read_policy_arn
 }

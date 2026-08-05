@@ -165,7 +165,7 @@ variable "groq_ai_secret_read_policy_arn" {
   type        = string
 }
 
-variable "qwen_ai_secret_read_policy_arn" {
+variable "open_router_ai_secret_read_policy_arn" {
   description = "Attached to worker only."
   type        = string
 }
