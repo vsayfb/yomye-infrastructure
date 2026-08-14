@@ -10,6 +10,7 @@ module "data" {
   source = "../../modules/data"
 
   name_prefix             = var.name_prefix
+  environment             = var.environment
   private_subnet_ids      = module.network.private_subnet_ids
   rds_sg_id               = module.network.rds_sg_id
   compute_az              = var.azs[0]

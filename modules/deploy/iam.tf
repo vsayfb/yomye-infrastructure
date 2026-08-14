@@ -12,10 +12,16 @@ data "github_repository" "repos" {
 }
 
 locals {
-  github_sub_conditions = [
-    for repo in data.github_repository.repos :
-    "repo:${var.github_org}@${data.github_user.owner.id}/${repo.name}@${repo.repo_id}:environment:${var.github_repo_env_name}"
-  ]
+  github_sub_conditions = flatten([
+    for repo in data.github_repository.repos : [
+      # Repositories using GitHub's legacy/default subject format.
+      "repo:${var.github_org}/${repo.name}:environment:${var.github_repo_env_name}",
+
+      # Repositories created after GitHub's immutable-subject rollout or
+      # repositories that explicitly opted in to immutable subject claims.
+      "repo:${var.github_org}@${data.github_user.owner.id}/${repo.name}@${repo.repo_id}:environment:${var.github_repo_env_name}",
+    ]
+  ])
 }
 
 resource "aws_iam_openid_connect_provider" "github" {

@@ -47,6 +47,29 @@ require_instances() {
   fi
 }
 
+wait_for_db_state() {
+  local expected_state="$1"
+  local current_state
+
+  for ((attempt = 1; attempt <= 120; attempt++)); do
+    current_state="$(aws rds describe-db-instances \
+      --region "$region" \
+      --db-instance-identifier "$db_instance_identifier" \
+      --query 'DBInstances[0].DBInstanceStatus' \
+      --output text)"
+
+    if [[ $current_state == "$expected_state" ]]; then
+      return 0
+    fi
+
+    printf 'PostgreSQL state: %s; waiting for %s...\n' "$current_state" "$expected_state"
+    sleep 15
+  done
+
+  printf 'Timed out waiting for PostgreSQL to reach %s.\n' "$expected_state" >&2
+  return 1
+}
+
 start_instances() {
   local -a nat_ids app_ids
   local db_state
@@ -152,9 +175,7 @@ stop_instances() {
       ;;
   esac
 
-  aws rds wait db-instance-stopped \
-    --region "$region" \
-    --db-instance-identifier "$db_instance_identifier"
+  wait_for_db_state stopped
 
   printf 'Staging EC2 and PostgreSQL are stopped. PostgreSQL data is retained.\n'
 }

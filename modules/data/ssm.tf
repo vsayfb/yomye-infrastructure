@@ -1,5 +1,9 @@
+locals {
+  runtime_parameter_prefix = "/${local.name_prefix}/${var.environment}"
+}
+
 resource "aws_ssm_parameter" "db_host" {
-  name  = "/${local.name_prefix}/app/db-host"
+  name  = "${local.runtime_parameter_prefix}/db-host"
   type  = "String"
   value = aws_db_instance.main.address
 
@@ -7,7 +11,7 @@ resource "aws_ssm_parameter" "db_host" {
 }
 
 resource "aws_ssm_parameter" "db_port" {
-  name  = "/${local.name_prefix}/app/db-port"
+  name  = "${local.runtime_parameter_prefix}/db-port"
   type  = "String"
   value = tostring(aws_db_instance.main.port)
 
@@ -15,7 +19,7 @@ resource "aws_ssm_parameter" "db_port" {
 }
 
 resource "aws_ssm_parameter" "db_name" {
-  name  = "/${local.name_prefix}/app/db-name"
+  name  = "${local.runtime_parameter_prefix}/db-name"
   type  = "String"
   value = aws_db_instance.main.db_name
 
@@ -24,7 +28,7 @@ resource "aws_ssm_parameter" "db_name" {
 
 
 resource "aws_ssm_parameter" "google_client_id" {
-  name  = "/${local.name_prefix}/app/google-client-id"
+  name  = "${local.runtime_parameter_prefix}/google-client-id"
   type  = "String"
   value = var.google_client_id
 
@@ -32,7 +36,7 @@ resource "aws_ssm_parameter" "google_client_id" {
 }
 
 resource "aws_ssm_parameter" "sqs_category_events_queue_url" {
-  name  = "/${local.name_prefix}/app/sqs-category-events-queue-url"
+  name  = "${local.runtime_parameter_prefix}/sqs-category-events-queue-url"
   type  = "String"
   value = aws_sqs_queue.category_events.url
 
@@ -40,7 +44,7 @@ resource "aws_ssm_parameter" "sqs_category_events_queue_url" {
 }
 
 resource "aws_ssm_parameter" "sqs_notification_events_queue_url" {
-  name  = "/${local.name_prefix}/app/sqs-notification-events-queue-url"
+  name  = "${local.runtime_parameter_prefix}/sqs-notification-events-queue-url"
   type  = "String"
   value = aws_sqs_queue.notification_events.url
 
@@ -48,7 +52,7 @@ resource "aws_ssm_parameter" "sqs_notification_events_queue_url" {
 }
 
 resource "aws_ssm_parameter" "mongo_db_name" {
-  name = "/${local.name_prefix}/app/mongo-db-name"
+  name = "${local.runtime_parameter_prefix}/mongo-db-name"
   type = "String"
 
   value = var.mongo_db_name
@@ -57,13 +61,13 @@ resource "aws_ssm_parameter" "mongo_db_name" {
 }
 
 resource "aws_ssm_parameter" "rds_secret_arn" {
-  name  = "/${local.name_prefix}/app/rds-secret-arn"
+  name  = "${local.runtime_parameter_prefix}/rds-secret-arn"
   type  = "String"
   value = aws_db_instance.main.master_user_secret[0].secret_arn
 }
 
 resource "aws_ssm_parameter" "groq_ai_endpoint" {
-  name = "/${local.name_prefix}/app/groq-ai-endpoint"
+  name = "${local.runtime_parameter_prefix}/groq-ai-endpoint"
   type = "String"
 
   value = var.groq_ai_endpoint
@@ -72,7 +76,7 @@ resource "aws_ssm_parameter" "groq_ai_endpoint" {
 }
 
 resource "aws_ssm_parameter" "groq_ai_model" {
-  name = "/${local.name_prefix}/app/groq-ai-model"
+  name = "${local.runtime_parameter_prefix}/groq-ai-model"
   type = "String"
 
   value = var.groq_ai_model
@@ -81,7 +85,7 @@ resource "aws_ssm_parameter" "groq_ai_model" {
 }
 
 resource "aws_ssm_parameter" "open_router_ai_model" {
-  name = "/${local.name_prefix}/app/open_router-ai-model"
+  name = "${local.runtime_parameter_prefix}/open_router-ai-model"
   type = "String"
 
   value = var.open_router_ai_model
@@ -90,7 +94,7 @@ resource "aws_ssm_parameter" "open_router_ai_model" {
 }
 
 resource "aws_ssm_parameter" "open_router_ai_endpoint" {
-  name = "/${local.name_prefix}/app/open_router-ai-endpoint"
+  name = "${local.runtime_parameter_prefix}/open_router-ai-endpoint"
   type = "String"
 
   value = var.open_router_ai_endpoint
@@ -99,7 +103,7 @@ resource "aws_ssm_parameter" "open_router_ai_endpoint" {
 }
 
 resource "aws_ssm_parameter" "gemini_ai_model" {
-  name = "/${local.name_prefix}/app/gemini-ai-model"
+  name = "${local.runtime_parameter_prefix}/gemini-ai-model"
   type = "String"
 
   value = var.gemini_ai_model
@@ -109,7 +113,7 @@ resource "aws_ssm_parameter" "gemini_ai_model" {
 
 
 resource "aws_ssm_parameter" "nvidia_ai_model" {
-  name = "/${local.name_prefix}/app/nvidia-ai-model"
+  name = "${local.runtime_parameter_prefix}/nvidia-ai-model"
   type = "String"
 
   value = var.nvidia_ai_model
@@ -118,7 +122,7 @@ resource "aws_ssm_parameter" "nvidia_ai_model" {
 }
 
 resource "aws_ssm_parameter" "nvidia_ai_endpoint" {
-  name = "/${local.name_prefix}/app/nvidia-ai-endpoint"
+  name = "${local.runtime_parameter_prefix}/nvidia-ai-endpoint"
   type = "String"
 
   value = var.nvidia_ai_endpoint
@@ -127,7 +131,7 @@ resource "aws_ssm_parameter" "nvidia_ai_endpoint" {
 }
 
 resource "aws_ssm_parameter" "mistral_ai_model" {
-  name = "/${local.name_prefix}/app/mistral-ai-model"
+  name = "${local.runtime_parameter_prefix}/mistral-ai-model"
   type = "String"
 
   value = var.mistral_ai_model
@@ -136,7 +140,7 @@ resource "aws_ssm_parameter" "mistral_ai_model" {
 }
 
 resource "aws_ssm_parameter" "mistral_ai_endpoint" {
-  name = "/${local.name_prefix}/app/mistral-ai-endpoint"
+  name = "${local.runtime_parameter_prefix}/mistral-ai-endpoint"
   type = "String"
 
   value = var.mistral_ai_endpoint
@@ -146,7 +150,7 @@ resource "aws_ssm_parameter" "mistral_ai_endpoint" {
 
 
 resource "aws_ssm_parameter" "cloudinary_api_key" {
-  name = "/${local.name_prefix}/app/cloudinary-api-key"
+  name = "${local.runtime_parameter_prefix}/cloudinary-api-key"
   type = "String"
 
   value = var.cloudinary_api_key
@@ -155,7 +159,7 @@ resource "aws_ssm_parameter" "cloudinary_api_key" {
 }
 
 resource "aws_ssm_parameter" "cloudinary_cloud_name" {
-  name = "/${local.name_prefix}/app/cloudinary-cloud-name"
+  name = "${local.runtime_parameter_prefix}/cloudinary-cloud-name"
   type = "String"
 
   value = var.cloudinary_cloud_name
@@ -164,23 +168,23 @@ resource "aws_ssm_parameter" "cloudinary_cloud_name" {
 }
 
 resource "aws_ssm_parameter" "r2_account_id" {
-  name  = "/${local.name_prefix}/app/r2-account-id"
+  name  = "${local.runtime_parameter_prefix}/r2-account-id"
   type  = "String"
   value = var.r2_account_id
 
   tags = local.common_tags
 }
 
-resource "aws_ssm_parameter" "r2_account_id" {
-  name  = "/${local.name_prefix}/app/r2-access-key-id"
+resource "aws_ssm_parameter" "r2_access_key_id" {
+  name  = "${local.runtime_parameter_prefix}/r2-access-key-id"
   type  = "String"
   value = var.r2_access_key_id
 
   tags = local.common_tags
 }
 
-resource "aws_ssm_parameter" "r2_account_id" {
-  name  = "/${local.name_prefix}/app/r2-secret-access-key"
+resource "aws_ssm_parameter" "r2_secret_access_key" {
+  name  = "${local.runtime_parameter_prefix}/r2-secret-access-key"
   type  = "String"
   value = var.r2_secret_access_key
 
@@ -188,7 +192,7 @@ resource "aws_ssm_parameter" "r2_account_id" {
 }
 
 resource "aws_ssm_parameter" "r2_bucket" {
-  name  = "/${local.name_prefix}/app/r2-bucket"
+  name  = "${local.runtime_parameter_prefix}/r2-bucket"
   type  = "String"
   value = var.r2_bucket
 
@@ -196,7 +200,7 @@ resource "aws_ssm_parameter" "r2_bucket" {
 }
 
 resource "aws_ssm_parameter" "ws_allowed_origins" {
-  name  = "/${local.name_prefix}/app/ws-allowed-origins"
+  name  = "${local.runtime_parameter_prefix}/ws-allowed-origins"
   type  = "String"
   value = var.ws_allowed_origins
 
@@ -482,5 +486,3 @@ resource "aws_iam_policy" "mistral_ai_secret_read" {
 
   tags = local.common_tags
 }
-
-

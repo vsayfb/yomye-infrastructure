@@ -3,6 +3,11 @@ variable "name_prefix" {
   type        = string
 }
 
+variable "environment" {
+  description = "Environment segment used in SSM runtime parameter paths."
+  type        = string
+}
+
 variable "tags" {
   description = "Common tags applied to every resource in this module."
   type        = map(string)

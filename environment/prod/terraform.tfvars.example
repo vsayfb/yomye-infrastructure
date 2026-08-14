@@ -30,7 +30,7 @@ github_repos = [
   "yevmiye-worker",
   "yevmiye-notification"
 ]
-github_repo_env_name = "production"
+github_repo_env_name = "staging"
 
 google_client_id = "792578760046-fmtg9tlr0fhm73ajuk2l60379ffbkpu6.apps.googleusercontent.com" # from the original dev .env you pasted at the very start
 
