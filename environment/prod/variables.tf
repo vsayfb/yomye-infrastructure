@@ -198,3 +198,8 @@ variable "r2_secret_access_key" {
 variable "r2_bucket" {
   type = string
 }
+
+variable "ws_allowed_origins" {
+  description = "Origins allowed to establish WebSocket connections."
+  type        = string
+}

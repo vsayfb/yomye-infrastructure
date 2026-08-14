@@ -94,6 +94,10 @@ output "sqs_notification_events_queue_url_parameter_name" {
   value = aws_ssm_parameter.sqs_notification_events_queue_url.name
 }
 
+output "ws_allowed_origins_parameter_name" {
+  value = aws_ssm_parameter.ws_allowed_origins.name
+}
+
 output "app_config_read_policy_arn" {
   value = aws_iam_policy.app_config_read.arn
 }
@@ -128,4 +132,3 @@ output "mistral_ai_secret_read_policy_arn" {
 output "cloudinary_api_secret_read_policy_arn" {
   value = aws_iam_policy.cloudinary_api_secret_read.arn
 }
-

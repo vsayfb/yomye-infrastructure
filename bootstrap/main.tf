@@ -20,6 +20,24 @@ resource "aws_s3_bucket_versioning" "terraform_state" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "terraform_state" {
+  bucket = aws_s3_bucket.terraform_state.id
+
+  depends_on = [aws_s3_bucket_versioning.terraform_state]
+
+  rule {
+    id     = "retain-two-state-versions"
+    status = "Enabled"
+
+    filter {}
+
+    noncurrent_version_expiration {
+      newer_noncurrent_versions = 1
+      noncurrent_days           = 1
+    }
+  }
+}
+
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 

@@ -195,6 +195,14 @@ resource "aws_ssm_parameter" "r2_bucket" {
   tags = local.common_tags
 }
 
+resource "aws_ssm_parameter" "ws_allowed_origins" {
+  name  = "/${local.name_prefix}/app/ws-allowed-origins"
+  type  = "String"
+  value = var.ws_allowed_origins
+
+  tags = local.common_tags
+}
+
 # --- Real secrets, SSM SecureString ----------------------------------
 # Migrated off Secrets Manager - none of these ever used rotation, cross-
 # account sharing, or >4KB values, so Secrets Manager bought nothing here
@@ -275,6 +283,7 @@ resource "aws_iam_policy" "app_config_read" {
           aws_ssm_parameter.mistral_ai_endpoint.arn,
           aws_ssm_parameter.gemini_ai_model.arn,
           aws_ssm_parameter.rds_secret_arn.arn,
+          aws_ssm_parameter.ws_allowed_origins.arn,
 
         ]
       }
@@ -473,6 +482,5 @@ resource "aws_iam_policy" "mistral_ai_secret_read" {
 
   tags = local.common_tags
 }
-
 
 

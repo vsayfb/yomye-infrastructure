@@ -44,6 +44,7 @@ module "data" {
   r2_bucket            = var.r2_bucket
   r2_secret_access_key = var.r2_secret_access_key
   r2_account_id        = var.r2_account_id
+  ws_allowed_origins   = var.ws_allowed_origins
 }
 
 module "compute" {

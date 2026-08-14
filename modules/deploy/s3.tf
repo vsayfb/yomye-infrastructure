@@ -38,13 +38,17 @@ resource "aws_s3_bucket_public_access_block" "app_deployments" {
 resource "aws_s3_bucket_lifecycle_configuration" "app_deployments" {
   bucket = aws_s3_bucket.app_deployments.id
 
+  depends_on = [aws_s3_bucket_versioning.app_deployments]
+
   rule {
-    id     = "expire-old-versions"
+    id     = "retain-two-object-versions"
     status = "Enabled"
 
+    filter {}
+
     noncurrent_version_expiration {
-      noncurrent_days = 2
+      newer_noncurrent_versions = 1
+      noncurrent_days           = 1
     }
   }
 }
-
