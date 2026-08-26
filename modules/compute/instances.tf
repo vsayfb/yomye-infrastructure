@@ -23,6 +23,7 @@ locals {
     opamp_endpoint_parameter_name   = var.opamp_endpoint_parameter_name
     opamp_auth_token_parameter_name = var.opamp_auth_token_parameter_name
     otlp_write_key_parameter_name   = var.otlp_write_key_parameter_name
+    grafana_cloud_otlp_endpoint     = var.grafana_cloud_otlp_endpoint
     otel_collector_version          = var.otel_collector_version
     remote_deploy_script_b64        = local.remote_deploy_script_b64
   }

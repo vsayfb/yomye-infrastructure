@@ -5,6 +5,7 @@ AWS_REGION="${aws_region}"
 OPAMP_ENDPOINT_PARAMETER_NAME="${opamp_endpoint_parameter_name}"
 OPAMP_AUTH_TOKEN_PARAMETER_NAME="${opamp_auth_token_parameter_name}"
 OTLP_WRITE_KEY_PARAMETER_NAME="${otlp_write_key_parameter_name}"
+OTLP_ENDPOINT="${grafana_cloud_otlp_endpoint}"
 OTEL_COLLECTOR_VERSION="${otel_collector_version}"
 SERVICE_NAME="${service_name}"
 
@@ -98,6 +99,7 @@ agent:
     GCLOUD_FM_URL: "$OPAMP_ENDPOINT"
     GCLOUD_BASIC_AUTH_BASE64: "$OPAMP_AUTH_TOKEN"
     GCLOUD_RW_API_KEY: "$OTLP_WRITE_KEY"
+    GCLOUD_OTLP_ENDPOINT: "$OTLP_ENDPOINT"
 
 storage:
   directory: /opt/otel/storage

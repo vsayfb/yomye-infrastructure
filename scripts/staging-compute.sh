@@ -50,6 +50,7 @@ require_instances() {
 wait_for_db_state() {
   local expected_state="$1"
   local current_state
+  local elapsed_seconds
 
   for ((attempt = 1; attempt <= 120; attempt++)); do
     current_state="$(aws rds describe-db-instances \
@@ -59,10 +60,14 @@ wait_for_db_state() {
       --output text)"
 
     if [[ $current_state == "$expected_state" ]]; then
+      elapsed_seconds=$(((attempt - 1) * 15))
+      printf 'PostgreSQL reached %s after %s seconds.\n' "$expected_state" "$elapsed_seconds"
       return 0
     fi
 
-    printf 'PostgreSQL state: %s; waiting for %s...\n' "$current_state" "$expected_state"
+    elapsed_seconds=$(((attempt - 1) * 15))
+    printf 'PostgreSQL state: %s; waiting for %s (%ss elapsed)...\n' \
+      "$current_state" "$expected_state" "$elapsed_seconds"
     sleep 15
   done
 
@@ -114,6 +119,7 @@ start_instances() {
   aws ec2 wait instance-status-ok \
     --region "$region" \
     --instance-ids "${nat_ids[@]}"
+  printf 'NAT instance is running: %s\n' "${nat_ids[*]}"
 
   printf 'Starting Core/Chat and Worker instances...\n'
   aws ec2 start-instances \
@@ -122,6 +128,7 @@ start_instances() {
   aws ec2 wait instance-status-ok \
     --region "$region" \
     --instance-ids "${app_ids[@]}"
+  printf 'Core/Chat and Worker instances are running: %s\n' "${app_ids[*]}"
 
   printf 'Staging EC2 and PostgreSQL are running.\n'
 }
@@ -141,6 +148,7 @@ stop_instances() {
   aws ec2 wait instance-stopped \
     --region "$region" \
     --instance-ids "${app_ids[@]}"
+  printf 'Core/Chat and Worker instances are stopped: %s\n' "${app_ids[*]}"
 
   printf 'Stopping NAT instance...\n'
   aws ec2 stop-instances \
@@ -149,6 +157,7 @@ stop_instances() {
   aws ec2 wait instance-stopped \
     --region "$region" \
     --instance-ids "${nat_ids[@]}"
+  printf 'NAT instance is stopped: %s\n' "${nat_ids[*]}"
 
   db_state="$(aws rds describe-db-instances \
     --region "$region" \
@@ -158,13 +167,13 @@ stop_instances() {
 
   case "$db_state" in
     available)
-      printf 'Stopping PostgreSQL; its data storage will be retained...\n'
+      printf 'Stopping PostgreSQL; its data storage will be retained. This can take several minutes...\n'
       aws rds stop-db-instance \
         --region "$region" \
         --db-instance-identifier "$db_instance_identifier" >/dev/null
       ;;
     stopping)
-      printf 'PostgreSQL is already stopping...\n'
+      printf 'PostgreSQL is already stopping. This can take several minutes...\n'
       ;;
     stopped)
       printf 'PostgreSQL is already stopped.\n'

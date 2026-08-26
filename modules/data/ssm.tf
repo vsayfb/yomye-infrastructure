@@ -177,7 +177,7 @@ resource "aws_ssm_parameter" "r2_account_id" {
 
 resource "aws_ssm_parameter" "r2_access_key_id" {
   name  = "${local.runtime_parameter_prefix}/r2-access-key-id"
-  type  = "String"
+  type  = "SecureString"
   value = var.r2_access_key_id
 
   tags = local.common_tags
@@ -185,7 +185,7 @@ resource "aws_ssm_parameter" "r2_access_key_id" {
 
 resource "aws_ssm_parameter" "r2_secret_access_key" {
   name  = "${local.runtime_parameter_prefix}/r2-secret-access-key"
-  type  = "String"
+  type  = "SecureString"
   value = var.r2_secret_access_key
 
   tags = local.common_tags

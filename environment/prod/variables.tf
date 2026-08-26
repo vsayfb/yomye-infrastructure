@@ -63,6 +63,11 @@ variable "grafana_cloud_opamp_endpoint" {
   type        = string
 }
 
+variable "grafana_cloud_otlp_endpoint" {
+  description = "Grafana Cloud OTLP ingestion endpoint."
+  type        = string
+}
+
 variable "grafana_cloud_opamp_auth_token_parameter_name" {
   description = "Name of the SSM SecureString parameter holding the OpAMP Authorization header value."
   type        = string
@@ -188,11 +193,13 @@ variable "r2_account_id" {
 }
 
 variable "r2_access_key_id" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "r2_secret_access_key" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "r2_bucket" {

@@ -74,6 +74,7 @@ module "compute" {
   cloudinary_api_secret_read_policy_arn = module.data.cloudinary_api_secret_read_policy_arn
   opamp_auth_token_parameter_name       = var.grafana_cloud_opamp_auth_token_parameter_name
   opamp_endpoint_parameter_name         = module.observability.opamp_endpoint_parameter_name
+  grafana_cloud_otlp_endpoint           = var.grafana_cloud_otlp_endpoint
   observability_read_policy_arn         = module.observability.observability_read_policy_arn
   otlp_write_key_parameter_name         = var.grafana_cloud_otlp_write_key_parameter_name
 

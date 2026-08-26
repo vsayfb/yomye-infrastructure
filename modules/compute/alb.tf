@@ -100,6 +100,38 @@ resource "aws_lb_listener_rule" "core" {
   tags = local.common_tags
 }
 
+resource "aws_lb_listener_rule" "core_probes" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 90
+
+  condition {
+    path_pattern {
+      values = [
+        "/core/health",
+        "/core/ready",
+      ]
+    }
+  }
+
+  transform {
+    type = "url-rewrite"
+
+    url_rewrite_config {
+      rewrite {
+        regex   = "^/core/(health|ready)$"
+        replace = "/$1"
+      }
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.core.arn
+  }
+
+  tags = local.common_tags
+}
+
 resource "aws_lb_listener_rule" "chat" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 200

@@ -111,7 +111,7 @@ variable "alb_idle_timeout" {
 variable "health_check_path" {
   description = "Shared health-check path for both target groups."
   type        = string
-  default     = "/health"
+  default     = "/ready"
 }
 
 # OTel Collector / OpAMP Supervisor
@@ -128,6 +128,11 @@ variable "opamp_auth_token_parameter_name" {
 
 variable "otlp_write_key_parameter_name" {
   type = string
+}
+
+variable "grafana_cloud_otlp_endpoint" {
+  description = "Grafana Cloud OTLP ingestion endpoint."
+  type        = string
 }
 
 variable "otel_collector_version" {
@@ -183,4 +188,3 @@ variable "nvidia_ai_secret_read_policy_arn" {
 variable "cloudinary_api_secret_read_policy_arn" {
   type = string
 }
-

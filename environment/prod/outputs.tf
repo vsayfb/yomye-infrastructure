@@ -7,6 +7,11 @@ output "nat_instance_public_ip" {
   value       = module.network.nat_instance_public_ip
 }
 
+output "nat_instance_id" {
+  description = "NAT EC2 instance ID."
+  value       = module.network.nat_instance_id
+}
+
 output "compute_az" {
   description = "The availability zone where everything actually runs."
   value       = module.data.compute_az
@@ -53,8 +58,18 @@ output "core_chat_instance_ip" {
   value = module.compute.core_chat_instance_ip
 }
 
+output "core_chat_instance_id" {
+  description = "Core/Chat EC2 instance ID."
+  value       = module.compute.core_chat_instance_id
+}
+
 output "worker_instance_ip" {
   value = module.compute.worker_instance_ip
+}
+
+output "worker_instance_id" {
+  description = "Worker EC2 instance ID."
+  value       = module.compute.worker_instance_id
 }
 
 output "app_deployments_bucket_name" {

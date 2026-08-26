@@ -1,0 +1,51 @@
+project_id = "yevmiye-production"
+region     = "europe-west3"
+zones      = ["europe-west3-a", "europe-west3-b"]
+
+name_prefix = "yevmiye"
+environment = "production"
+
+managed_certificate_domains = [
+  "api.example.com",
+]
+
+# Leave false until GitHub has replaced the Cloud Run bootstrap image with the
+# real GCP-compatible notification image, then set true and apply again.
+notification_delivery_enabled = false
+
+github_org = "vsayfb"
+github_repos = [
+  "yevmiye-core",
+  "yevmiye-chat",
+  "yevmiye-worker",
+  "yevmiye-notification",
+]
+github_environment = "production"
+
+db_name = "yevmiye"
+db_user = "yevmiye_app"
+
+google_client_id  = "replace-me.apps.googleusercontent.com"
+mongo_db_name     = "yevmiye"
+ws_allowed_origins = "https://app.example.com"
+
+grafana_cloud_opamp_endpoint = "https://replace-me.grafana.net"
+grafana_cloud_otlp_endpoint  = "https://replace-me.grafana.net/otlp"
+
+groq_ai_endpoint        = ""
+groq_ai_model           = ""
+gemini_model            = ""
+open_router_ai_endpoint = ""
+open_router_ai_model    = ""
+nvidia_ai_endpoint      = ""
+nvidia_ai_model         = ""
+mistral_ai_endpoint     = ""
+mistral_ai_model        = ""
+
+cloudinary_api_key    = ""
+cloudinary_cloud_name = ""
+
+r2_account_id = ""
+r2_access_key_id = ""
+r2_secret_access_key = ""
+r2_bucket     = "yevmiye-production-media"

@@ -29,18 +29,12 @@ resource "aws_lambda_function" "notification" {
     security_group_ids = [var.lambda_sg_id]
   }
 
-  environment {
-    variables = {
-      # SSM parameter NAME now, not a Secrets Manager ARN - the Lambda
-      # fetches this directly via ssm:GetParameter(name, WithDecryption).
-      FIREBASE_CREDENTIALS_PARAMETER_NAME = data.aws_ssm_parameter.firebase_credentials.name
-    }
-  }
-
   tags = merge(local.common_tags, { Name = "${local.name_prefix}-notification-lambda" })
 
   lifecycle {
-    ignore_changes = [s3_key, source_code_hash]
+    # GitHub Actions owns the deployed package and runtime environment.
+    # Terraform only provisions the bootstrap function and its infrastructure.
+    ignore_changes = [s3_key, source_code_hash, environment]
   }
 }
 

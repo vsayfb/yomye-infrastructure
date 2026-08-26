@@ -189,11 +189,13 @@ variable "r2_account_id" {
 }
 
 variable "r2_access_key_id" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "r2_secret_access_key" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "r2_bucket" {
