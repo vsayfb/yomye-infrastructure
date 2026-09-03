@@ -1,26 +1,26 @@
 resource "google_service_account" "core_chat" {
-  account_id   = "${var.name_prefix}-prod-core-chat"
-  display_name = "Yevmiye production Core and Chat"
+  account_id   = "${var.name_prefix}-core-chat"
+  display_name = "Yevmiye ${var.environment} Core and Chat"
 }
 
 resource "google_service_account" "worker" {
-  account_id   = "${var.name_prefix}-prod-worker"
-  display_name = "Yevmiye production categorization worker"
+  account_id   = "${var.name_prefix}-worker"
+  display_name = "Yevmiye ${var.environment} categorization worker"
 }
 
 resource "google_service_account" "notification" {
-  account_id   = "${var.name_prefix}-prod-notify"
-  display_name = "Yevmiye production notification service"
+  account_id   = "${var.name_prefix}-notify"
+  display_name = "Yevmiye ${var.environment} notification service"
 }
 
 resource "google_service_account" "notification_push" {
-  account_id   = "${var.name_prefix}-prod-push"
-  display_name = "Pub/Sub identity for notification delivery"
+  account_id   = "${var.name_prefix}-push"
+  display_name = "Pub/Sub identity for ${var.environment} notification delivery"
 }
 
 resource "google_service_account" "github_deploy" {
-  account_id   = "${var.name_prefix}-prod-deploy"
-  display_name = "GitHub Actions production deployer"
+  account_id   = "${var.name_prefix}-deploy"
+  display_name = "GitHub Actions ${var.environment} deployer"
 }
 
 locals {

@@ -1,7 +1,7 @@
 resource "google_iam_workload_identity_pool" "github" {
-  workload_identity_pool_id = "${var.name_prefix}-prod-github"
-  display_name              = "Yevmiye production GitHub"
-  description               = "Short-lived GitHub Actions identities for production deployments"
+  workload_identity_pool_id = "${var.name_prefix}-github"
+  display_name              = "Yevmiye ${var.environment} GitHub"
+  description               = "Short-lived GitHub Actions identities for ${var.environment} deployments"
 
   depends_on = [google_project_service.required["iam.googleapis.com"]]
 }

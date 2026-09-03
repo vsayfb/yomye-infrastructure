@@ -8,11 +8,13 @@ locals {
 
   core_chat_otel_configure_script_b64 = base64encode(templatefile("${path.module}/scripts/configure-otel.sh.tpl", {
     service_name                = "core-chat"
+    environment                 = var.environment
     grafana_cloud_otlp_endpoint = var.grafana_cloud_otlp_endpoint
   }))
 
   worker_otel_configure_script_b64 = base64encode(templatefile("${path.module}/scripts/configure-otel.sh.tpl", {
     service_name                = "worker"
+    environment                 = var.environment
     grafana_cloud_otlp_endpoint = var.grafana_cloud_otlp_endpoint
   }))
 
@@ -43,7 +45,7 @@ resource "google_compute_instance_template" "core_chat" {
     source_image = data.google_compute_image.debian.self_link
     auto_delete  = true
     boot         = true
-    disk_size_gb = 20
+    disk_size_gb = var.core_chat_boot_disk_size_gb
     disk_type    = "pd-balanced"
   }
 
@@ -54,6 +56,7 @@ resource "google_compute_instance_template" "core_chat" {
   metadata = {
     enable-oslogin         = "TRUE"
     block-project-ssh-keys = "TRUE"
+    app-environment        = var.environment
   }
   metadata_startup_script = local.core_chat_startup
 
@@ -98,6 +101,7 @@ resource "google_compute_instance_template" "worker" {
   metadata = {
     enable-oslogin         = "TRUE"
     block-project-ssh-keys = "TRUE"
+    app-environment        = var.environment
   }
   metadata_startup_script = local.worker_startup
 
@@ -121,13 +125,11 @@ resource "google_compute_instance_template" "worker" {
   depends_on = [google_compute_router_nat.main]
 }
 
-resource "google_compute_region_instance_group_manager" "core_chat" {
+resource "google_compute_instance_group_manager" "core_chat" {
   name               = "${local.resource_prefix}-core-chat"
-  region             = var.region
+  zone               = var.zone
   base_instance_name = "${local.resource_prefix}-core-chat"
   target_size        = 1
-
-  distribution_policy_zones = var.zones
 
   version {
     instance_template = google_compute_instance_template.core_chat.id
@@ -148,18 +150,15 @@ resource "google_compute_region_instance_group_manager" "core_chat" {
     minimal_action                 = "REPLACE"
     most_disruptive_allowed_action = "REPLACE"
     max_surge_fixed                = 1
-    max_unavailable_fixed          = 0
     replacement_method             = "SUBSTITUTE"
   }
 }
 
-resource "google_compute_region_instance_group_manager" "worker" {
+resource "google_compute_instance_group_manager" "worker" {
   name               = "${local.resource_prefix}-worker"
-  region             = var.region
+  zone               = var.zone
   base_instance_name = "${local.resource_prefix}-worker"
   target_size        = 1
-
-  distribution_policy_zones = var.zones
 
   version {
     instance_template = google_compute_instance_template.worker.id
@@ -170,7 +169,6 @@ resource "google_compute_region_instance_group_manager" "worker" {
     minimal_action                 = "REPLACE"
     most_disruptive_allowed_action = "REPLACE"
     max_surge_fixed                = 1
-    max_unavailable_fixed          = 0
     replacement_method             = "SUBSTITUTE"
   }
 }

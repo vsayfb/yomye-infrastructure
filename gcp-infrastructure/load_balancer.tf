@@ -31,19 +31,23 @@ resource "google_compute_backend_service" "core" {
   protocol              = "HTTP"
   port_name             = "core"
   load_balancing_scheme = "EXTERNAL_MANAGED"
-  timeout_sec           = 60
+  timeout_sec           = 3600
   health_checks         = [google_compute_health_check.core.id]
 
   backend {
-    group           = google_compute_region_instance_group_manager.core_chat.instance_group
+    group           = google_compute_instance_group_manager.core_chat.instance_group
     balancing_mode  = "UTILIZATION"
     max_utilization = 0.8
     capacity_scaler = 1.0
   }
 
-  log_config {
-    enable      = true
-    sample_rate = 1.0
+  dynamic "log_config" {
+    for_each = var.enable_load_balancer_logging ? [1] : []
+
+    content {
+      enable      = true
+      sample_rate = 1.0
+    }
   }
 }
 
@@ -56,15 +60,19 @@ resource "google_compute_backend_service" "chat" {
   health_checks         = [google_compute_health_check.chat.id]
 
   backend {
-    group           = google_compute_region_instance_group_manager.core_chat.instance_group
+    group           = google_compute_instance_group_manager.core_chat.instance_group
     balancing_mode  = "UTILIZATION"
     max_utilization = 0.8
     capacity_scaler = 1.0
   }
 
-  log_config {
-    enable      = true
-    sample_rate = 1.0
+  dynamic "log_config" {
+    for_each = var.enable_load_balancer_logging ? [1] : []
+
+    content {
+      enable      = true
+      sample_rate = 1.0
+    }
   }
 }
 
@@ -152,42 +160,11 @@ resource "google_compute_global_address" "load_balancer" {
   name = "${local.resource_prefix}-lb"
 }
 
-resource "google_compute_managed_ssl_certificate" "apps" {
-  name = "${local.resource_prefix}-apps"
-
-  managed {
-    domains = var.managed_certificate_domains
-  }
-}
-
-resource "google_compute_target_https_proxy" "apps" {
-  name             = "${local.resource_prefix}-https"
-  url_map          = google_compute_url_map.apps.id
-  ssl_certificates = [google_compute_managed_ssl_certificate.apps.id]
-}
-
-resource "google_compute_global_forwarding_rule" "https" {
-  name                  = "${local.resource_prefix}-https"
-  ip_address            = google_compute_global_address.load_balancer.id
-  ip_protocol           = "TCP"
-  port_range            = "443"
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-  target                = google_compute_target_https_proxy.apps.id
-}
-
-resource "google_compute_url_map" "http_redirect" {
-  name = "${local.resource_prefix}-http-redirect"
-
-  default_url_redirect {
-    https_redirect         = true
-    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
-    strip_query            = false
-  }
-}
-
-resource "google_compute_target_http_proxy" "redirect" {
+# The current AWS ALB exposes a single HTTP listener. Keep the GCP baseline
+# equivalent; TLS can be layered on later without changing application backends.
+resource "google_compute_target_http_proxy" "apps" {
   name    = "${local.resource_prefix}-http"
-  url_map = google_compute_url_map.http_redirect.id
+  url_map = google_compute_url_map.apps.id
 }
 
 resource "google_compute_global_forwarding_rule" "http" {
@@ -196,6 +173,5 @@ resource "google_compute_global_forwarding_rule" "http" {
   ip_protocol           = "TCP"
   port_range            = "80"
   load_balancing_scheme = "EXTERNAL_MANAGED"
-  target                = google_compute_target_http_proxy.redirect.id
+  target                = google_compute_target_http_proxy.apps.id
 }
-

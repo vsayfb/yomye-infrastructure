@@ -47,7 +47,7 @@ resource "google_storage_bucket" "notification_deployments" {
 resource "google_artifact_registry_repository" "services" {
   location      = var.region
   repository_id = local.resource_prefix
-  description   = "Yevmiye production service images"
+  description   = "Yevmiye ${var.environment} service images"
   format        = "DOCKER"
   labels        = local.labels
 

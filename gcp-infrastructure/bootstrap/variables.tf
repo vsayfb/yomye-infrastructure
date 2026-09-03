@@ -12,3 +12,8 @@ variable "name_prefix" {
   default = "yevmiye-production"
 }
 
+variable "state_prefix" {
+  description = "Object prefix used by the root GCS backend."
+  type        = string
+  default     = "production"
+}

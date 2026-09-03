@@ -1,18 +1,31 @@
 output "load_balancer_ip" {
-  description = "Create DNS A records for managed_certificate_domains at this address."
+  description = "Public IP of the HTTP application load balancer."
   value       = google_compute_global_address.load_balancer.address
 }
 
+output "project_id" {
+  description = "Google Cloud project containing the production environment."
+  value       = var.project_id
+}
+
+output "region" {
+  value = var.region
+}
+
 output "application_url" {
-  value = "https://${var.managed_certificate_domains[0]}"
+  value = "http://${google_compute_global_address.load_balancer.address}"
 }
 
 output "core_chat_instance_group" {
-  value = google_compute_region_instance_group_manager.core_chat.name
+  value = google_compute_instance_group_manager.core_chat.name
 }
 
 output "worker_instance_group" {
-  value = google_compute_region_instance_group_manager.worker.name
+  value = google_compute_instance_group_manager.worker.name
+}
+
+output "compute_zone" {
+  value = var.zone
 }
 
 output "cloud_sql_instance_name" {
@@ -37,6 +50,10 @@ output "artifact_registry_repository" {
 
 output "notification_service_uri" {
   value = google_cloud_run_v2_service.notification.uri
+}
+
+output "notification_service_name" {
+  value = google_cloud_run_v2_service.notification.name
 }
 
 output "database_credentials_secret" {

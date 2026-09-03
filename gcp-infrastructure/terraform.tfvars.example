@@ -1,17 +1,34 @@
+# This example deploys production with the current AWS-sized baseline in Frankfurt.
 project_id = "yevmiye-production"
 region     = "europe-west3"
-zones      = ["europe-west3-a", "europe-west3-b"]
+zone       = "europe-west3-a"
 
 name_prefix = "yevmiye"
 environment = "production"
 
-managed_certificate_domains = [
-  "api.example.com",
-]
+# AWS-equivalent baseline sizing. These are already the defaults, but keeping
+# them explicit here makes the intended parity clear.
+core_chat_machine_type      = "e2-small"
+worker_machine_type         = "e2-small"
+core_chat_boot_disk_size_gb = 10
+worker_boot_disk_size_gb    = 10
+
+db_tier                           = "db-g1-small"
+db_disk_size_gb                   = 20
+db_backup_retention_count         = 1
+db_transaction_log_retention_days = 1
+db_deletion_protection            = false
+
+# Match current AWS logging posture and avoid usage-based logging costs unless
+# deliberately enabled.
+enable_vpc_flow_logs          = false
+enable_nat_logging            = false
+enable_load_balancer_logging  = false
 
 # Leave false until GitHub has replaced the Cloud Run bootstrap image with the
 # real GCP-compatible notification image, then set true and apply again.
-notification_delivery_enabled = false
+notification_delivery_enabled    = false
+notification_deletion_protection = false
 
 github_org = "vsayfb"
 github_repos = [
@@ -23,11 +40,11 @@ github_repos = [
 github_environment = "production"
 
 db_name = "yevmiye"
-db_user = "yevmiye_app"
+# db_user = "yevmiye_app" # optional; omitted to generate an AWS-style random username
 
-google_client_id  = "replace-me.apps.googleusercontent.com"
-mongo_db_name     = "yevmiye"
-ws_allowed_origins = "https://app.example.com"
+google_client_id   = "replace-me.apps.googleusercontent.com"
+mongo_db_name      = "yevmiye"
+ws_allowed_origins = "http://replace-me.example.com"
 
 grafana_cloud_opamp_endpoint = "https://replace-me.grafana.net"
 grafana_cloud_otlp_endpoint  = "https://replace-me.grafana.net/otlp"
@@ -45,7 +62,7 @@ mistral_ai_model        = ""
 cloudinary_api_key    = ""
 cloudinary_cloud_name = ""
 
-r2_account_id = ""
-r2_access_key_id = ""
+r2_account_id        = ""
+r2_access_key_id     = ""
 r2_secret_access_key = ""
-r2_bucket     = "yevmiye-production-media"
+r2_bucket            = "yevmiye-production-media"

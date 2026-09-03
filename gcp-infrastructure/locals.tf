@@ -1,5 +1,7 @@
 locals {
-  resource_prefix = "${var.name_prefix}-${var.environment}"
+  # The GCP project is the environment boundary, so resource names mirror the
+  # current AWS names and do not repeat the environment name.
+  resource_prefix = var.name_prefix
 
   labels = merge(var.labels, {
     environment = var.environment

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SERVICE_NAME="${service_name}"
+APP_ENV="${environment}"
 OTLP_ENDPOINT="${grafana_cloud_otlp_endpoint}"
 PROJECT_ID="$(curl -fsS -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/project/project-id)"
 
@@ -39,7 +40,7 @@ agent:
   description:
     identifying_attributes:
       service.name: "$SERVICE_NAME"
-      deployment.environment.name: "production"
+      deployment.environment.name: "$APP_ENV"
   args:
     - --feature-gates
     - service.AllowNoPipelines

@@ -5,7 +5,6 @@ output "backend_bucket" {
 output "backend_hcl" {
   value = <<-EOT
     bucket = "${google_storage_bucket.terraform_state.name}"
-    prefix = "production"
+    prefix = "${var.state_prefix}"
   EOT
 }
-

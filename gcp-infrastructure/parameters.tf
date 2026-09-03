@@ -1,7 +1,7 @@
 locals {
   # These IDs intentionally match the suffixes used below
-  # /yevmiye/staging/ in AWS. Production runs in its own GCP project, so the
-  # project provides the environment boundary and no path prefix is needed.
+  # /yevmiye/staging/ in AWS. This GCP root assumes one project per environment,
+  # so the project provides the environment boundary and no path prefix is needed.
   managed_parameter_values = {
     "cloudinary-api-key"                = var.cloudinary_api_key
     "cloudinary-cloud-name"             = var.cloudinary_cloud_name
@@ -26,6 +26,7 @@ locals {
     "r2-secret-access-key"              = var.r2_secret_access_key
     "rds-secret-arn"                    = google_secret_manager_secret.database_credentials.id
     "sqs-category-events-queue-url"     = google_pubsub_topic.category_events.id
+    "category-events-subscription"      = google_pubsub_subscription.category_worker.id
     "sqs-notification-events-queue-url" = google_pubsub_topic.notification_events.id
     "ws-allowed-origins"                = var.ws_allowed_origins
   }

@@ -1,44 +1,56 @@
-# Yevmiye production on Google Cloud
+# Yevmiye on Google Cloud — AWS-parity baseline
 
-This directory is an independent Terraform root for the production environment. It does not import or depend on the AWS staging modules in the parent repository, and no Terraform command has been run against a Google Cloud project.
+This Terraform root deploys Yevmiye's production environment on Google Cloud. Its initial sizing mirrors the current AWS staging footprint as closely as practical, while using GCP-native services where preferable. No Terraform command has been run against a Google Cloud project by this package.
 
-## Architecture
+## Architecture mapping
 
-| AWS staging component | Google Cloud production component |
+| Current AWS component | Google Cloud equivalent in this root |
 | --- | --- |
-| VPC, private subnets, NAT EC2 | Custom VPC, private regional subnet, Cloud Router and Cloud NAT |
-| Core and Chat EC2 host | Regional Compute Engine managed instance group, one VM running both services |
-| Worker EC2 host | Regional Compute Engine managed instance group, one worker VM with Ollama bootstrap |
-| Application Load Balancer | Global external Application Load Balancer with managed TLS |
-| RDS PostgreSQL | Regional Cloud SQL for PostgreSQL 16, private IP, HA, PITR and deletion protection |
+| VPC + private application subnets | Custom VPC + private regional subnet |
+| `t3.micro` self-managed NAT instance | Cloud Router + managed Cloud NAT |
+| Core + Chat `t3.small`, 8 GB gp3 | One `e2-small`, 10 GB balanced PD |
+| Worker `t3.small`, 8 GB gp3 | One `e2-small`, 10 GB balanced PD |
+| Both application hosts in one compute AZ | Both application hosts in one GCP zone |
+| HTTP Application Load Balancer | Global external HTTP Application Load Balancer |
+| RDS PostgreSQL 16 `db.t4g.micro`, Single-AZ | Cloud SQL PostgreSQL 16 `db-g1-small`, zonal |
+| RDS 20 GB gp3 | Cloud SQL 20 GB SSD |
+| 1-day automated backup retention | One retained backup + one day of PITR logs |
 | SQS queues | Pub/Sub topics and durable subscriptions |
-| Notification Lambda | Private Cloud Run v2 service invoked by authenticated Pub/Sub push |
-| S3 deployment buckets | Private, versioned GCS deployment buckets retaining the latest two object versions |
-| SSM Parameter Store | Parameter Manager with the same parameter suffix IDs |
-| RDS managed master-user secret | Secret Manager, referenced by `rds-secret-arn` |
-| GitHub AWS OIDC role | Workload Identity Federation and a dedicated deploy service account |
+| 256 MB / 60 second notification Lambda | Scale-to-zero Cloud Run notification service, 512 MiB / 60 seconds |
+| S3 deployment buckets | Private, versioned GCS deployment buckets retaining two object versions |
+| SSM Parameter Store | Parameter Manager with matching parameter suffix IDs |
+| RDS managed master-user secret | Secret Manager connection JSON referenced by `rds-secret-arn` |
+| GitHub AWS OIDC role | Workload Identity Federation + deploy service account |
 
-The Core path stays `/core/*`. `/core/health` and `/core/ready` are rewritten to `/health` and `/ready`. The Chat prefix is removed, so `/chat/foo` reaches Chat as `/foo`. HTTP redirects to HTTPS. Both application VMs have no public IP; administrative SSH goes through IAP.
+Cloud Run remains at 512 MiB because that is the practical/default second-generation service memory floor for this networking model; it still scales to zero, so there is no fixed idle instance cost.
 
-## Before applying
+The GCP project is treated as the environment boundary. Resource names therefore use the same `yevmiye-*` style as AWS rather than repeating `production` in every resource name. The `environment` label and application environment are fixed to `production`, which activates the services' GCP configuration loaders.
 
-You need an existing, billing-enabled Google Cloud project, Terraform, `gcloud`, and a production DNS name. The identity running Terraform needs permission to enable APIs, create the resources in this directory, and administer project IAM.
+## Deliberate differences from AWS
 
-Create `terraform.tfvars` from `terraform.tfvars.example` and replace every placeholder. As in the AWS Terraform, the R2 access key values are Terraform-managed inputs and therefore enter Terraform state; keep `terraform.tfvars` uncommitted and restrict access to the state bucket.
+Cloud NAT is retained instead of creating a NAT VM. It provides the same outbound-only role for the private application hosts without OS patching or a single-purpose VM. At this small footprint it is generally the better GCP implementation; NAT data processing remains usage-based.
 
-The current application binaries use AWS SSM, SQS, and Lambda contracts. Before production traffic is sent here, the service repositories must support these GCP contracts:
+Compute Engine uses zonal managed instance groups with a target size of one rather than standalone instances. This preserves the single-instance AWS footprint while keeping the existing deployment and replacement workflow. It does not create active-active HA.
 
-- Parameter Manager using Application Default Credentials. Parameter IDs match the existing AWS SSM suffix constants exactly; for example, `/yevmiye/staging/db-host` becomes the GCP parameter `db-host` in the dedicated production project.
-- Secret Manager only for the generated PostgreSQL connection JSON. The `rds-secret-arn` parameter contains that GCP Secret Manager resource name, preserving the existing two-step lookup.
-- Pub/Sub instead of SQS. The worker pulls `category_worker`; Core publishes category or notification events.
-- The notification container accepts the standard wrapped Pub/Sub HTTP push envelope and returns a successful HTTP status only after processing.
-- Core and Chat continue to expose `/ready` on ports 8080 and 8081 respectively.
+The load balancer is HTTP-only by default because the current AWS ALB has one HTTP listener. Add managed TLS later when the public DNS name is settled; doing so is intentionally outside this parity baseline.
 
-The load balancer will report unhealthy backends until Core and Chat have been deployed to the VM. Terraform creates Cloud Run with Google's public hello image as a harmless bootstrap, ignores later image changes, and initially leaves the notification subscription in pull mode. Deploy the real notification image first, then set `notification_delivery_enabled = true`; this prevents the placeholder from acknowledging and dropping notification events.
+VPC flow logs, Cloud NAT logs, and load-balancer request logs are disabled by default because the current AWS Terraform does not enable equivalent access/flow logging. They can be turned on independently with variables when needed.
+
+## Important application compatibility
+
+The service binaries must support the GCP contracts before traffic is moved from AWS:
+
+- Parameter Manager through Application Default Credentials. Parameter IDs match the existing AWS SSM suffix constants; for example `/yevmiye/staging/db-host` maps to the GCP parameter `db-host` in the production project.
+- Secret Manager for the generated PostgreSQL connection JSON. The `rds-secret-arn` parameter contains the GCP Secret Manager resource name, preserving the existing two-step lookup pattern.
+- Pub/Sub instead of SQS. Worker pulls the category subscription; Core and Worker publish the appropriate events.
+- The notification container accepts the standard wrapped Pub/Sub HTTP push envelope and returns success only after processing.
+- Core and Chat continue to expose `/ready` on ports 8080 and 8081.
+
+The load balancer keeps the current routing contract: `/core/*` routes to Core, `/core/health` and `/core/ready` are rewritten to `/health` and `/ready`, and `/chat`/`/chat/*` route to Chat with the `/chat` prefix removed.
 
 ## Remote state bootstrap
 
-The state bucket is deliberately a separate root because a backend cannot create the bucket that stores its own state.
+The state bucket is a separate Terraform root because a backend cannot create the bucket that stores its own state.
 
 ```bash
 cd bootstrap
@@ -52,50 +64,69 @@ cp backend.hcl.example backend.hcl
 terraform init -backend-config=backend.hcl
 ```
 
-The state bucket is private, versioned, protected from Terraform destruction, and its lifecycle retains the live object plus one older version.
+The state bucket is private, versioned, protected from Terraform destruction, and retains the live object plus one previous version.
 
-## Provision and populate credentials
+## Configure and apply
 
-Review a saved plan before applying:
+Start from the AWS-parity example:
 
 ```bash
 cp terraform.tfvars.example terraform.tfvars
+```
+
+Replace the project ID and every credential/configuration placeholder. In particular, confirm `ws_allowed_origins`, OAuth configuration, Grafana endpoints, R2 configuration, GitHub organization/repositories, and application model endpoints.
+
+Then review a saved plan before applying:
+
+```bash
 terraform fmt -recursive
 terraform validate
 terraform plan -out=production.tfplan
 terraform apply production.tfplan
 ```
 
-Terraform creates every Parameter Manager container. It adds versions for the same values managed by the AWS Terraform and leaves the parameters represented by AWS `data "aws_ssm_parameter"` lookups empty for manual population. Populate those after the first apply:
+Terraform creates every Parameter Manager container. It adds versions for values managed by Terraform and leaves the manually supplied secret-like parameters empty for population after the first apply:
 
 ```bash
 ./scripts/populate-parameters.sh YOUR_GCP_PROJECT_ID
 ```
 
-The script asks for each value with hidden input. Firebase credentials are read from a validated JSON file path. Typed values are passed through stdin and never put on the command line; these manually created versions never enter Terraform state. Parameter Manager uses Google-managed encryption keys by default.
+The script reads typed secrets from stdin rather than placing them on the command line. Firebase credentials are loaded from a validated JSON file path. These manually created versions do not enter Terraform state.
 
-Terraform generates the PostgreSQL password and stores its connection JSON in the only application Secret Manager secret, exposed through the `database_credentials_secret` output. That generated password and the Terraform-managed R2 credentials are necessarily present as sensitive data in Terraform state, so access to the bootstrap bucket must remain tightly restricted.
+Terraform generates the PostgreSQL password and stores its connection JSON in Secret Manager. The generated password and Terraform-managed R2 credentials are sensitive values in Terraform state; restrict access to the state bucket accordingly.
 
-Parameter Manager and Secret Manager have separate usage-based pricing on GCP. This layout preserves the AWS storage split and the backend's existing parameter names; it does not imply that Parameter Manager is free.
+## Notification deployment
 
-## DNS and TLS
+Terraform creates the Cloud Run service with Google's public hello image as a bootstrap and initially leaves notification delivery disabled. Deploy the real notification container first, then set:
 
-After apply, create A records for every entry in `managed_certificate_domains` pointing to `load_balancer_ip`. Google-managed certificate issuance begins only after DNS resolves to the load balancer and can take time.
+```hcl
+notification_delivery_enabled = true
+```
+
+and apply again. This avoids the placeholder image acknowledging and dropping notification events.
 
 ## GitHub Actions identity
 
-Set these GitHub production environment variables from Terraform outputs:
+Set the production GitHub environment variables from Terraform outputs:
 
-- `GCP_WORKLOAD_IDENTITY_PROVIDER` from `github_workload_identity_provider`
-- `GCP_DEPLOY_SERVICE_ACCOUNT` from `github_deploy_service_account`
-- `GCP_PROJECT_ID` to the project ID
-- `GCP_REGION` to the selected region
-- `GCS_DEPLOY_BUCKET` from `app_deployments_bucket`
+- `GCP_WORKLOAD_IDENTITY_PROVIDER` = `github_workload_identity_provider`
+- `GCP_DEPLOY_SERVICE_ACCOUNT` = `github_deploy_service_account`
+- `GCP_PROJECT_ID` = the production project ID
+- `GCP_REGION` = the selected region
+- `GCP_ZONE` = `compute_zone`
+- `GCP_CORE_CHAT_INSTANCE_GROUP` = `core_chat_instance_group`
+- `GCS_DEPLOY_BUCKET` = `app_deployments_bucket`
 
-Every deployment job must declare `environment: production` and `permissions: { id-token: write, contents: read }`. The provider rejects tokens from another GitHub owner, another environment, or a repository not listed in `github_repos`.
+Deployment jobs should declare the environment configured in `github_environment` (default `production`) and request `id-token: write` plus `contents: read` permissions.
 
-VM deployments upload binaries to the deployment bucket, connect to the managed VM through IAP, and invoke `/opt/deploy/remote-deploy.sh` with `SERVICE_NAME`, `BINARY_NAME`, `GCS_BUCKET`, and `GCS_OBJECT`. Notification deployments push an image to the output Artifact Registry repository and update the Cloud Run service image.
+## Scaling up later
 
-## Destruction safeguards
+This production baseline intentionally starts with the current small AWS staging sizing rather than a highly available design. Before sending production traffic, reassess at least these settings:
 
-Cloud SQL and Cloud Run have deletion protection enabled, the state bucket has `prevent_destroy`, and application buckets refuse deletion while nonempty. These are intentional production safeguards. Set `db_deletion_protection` and `notification_deletion_protection` to `false`, remove the state bucket's `prevent_destroy` only during final decommissioning, and empty all object versions before destroying buckets.
+- move Core/Chat and Worker to larger machine types as observed load requires;
+- move Cloud SQL from shared-core zonal to a dedicated-core regional HA tier;
+- consider multi-zone application capacity;
+- enable HTTPS and a managed certificate;
+- enable deletion protection;
+- increase database backup/PITR retention;
+- enable the logging signals needed for incident response and audit requirements.

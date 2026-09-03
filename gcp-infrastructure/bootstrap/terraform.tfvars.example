@@ -1,3 +1,4 @@
-project_id  = "yevmiye-production"
-location    = "EU"
-name_prefix = "yevmiye-production"
+project_id   = "yevmiye-production"
+location     = "EU"
+name_prefix  = "yevmiye-production"
+state_prefix = "production"

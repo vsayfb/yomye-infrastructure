@@ -1,6 +1,17 @@
+resource "random_string" "db_username_suffix" {
+  length  = 8
+  special = false
+  upper   = false
+  numeric = true
+}
+
 resource "random_password" "database" {
   length  = 32
   special = true
+}
+
+locals {
+  db_username = coalesce(var.db_user, "${local.resource_prefix}_${random_string.db_username_suffix.result}")
 }
 
 resource "google_sql_database_instance" "postgres" {
@@ -10,17 +21,24 @@ resource "google_sql_database_instance" "postgres" {
   deletion_protection = var.db_deletion_protection
 
   settings {
+    # PostgreSQL 16 otherwise defaults to Enterprise Plus. The shared-core tier
+    # used to mirror db.t4g.micro belongs to Cloud SQL Enterprise edition.
+    edition           = "ENTERPRISE"
     tier              = var.db_tier
-    availability_type = "REGIONAL"
+    availability_type = "ZONAL"
     disk_type         = "PD_SSD"
     disk_size         = var.db_disk_size_gb
-    disk_autoresize   = true
+    disk_autoresize   = false
+
+    location_preference {
+      zone = var.zone
+    }
 
     backup_configuration {
       enabled                        = true
       point_in_time_recovery_enabled = true
       start_time                     = "02:00"
-      transaction_log_retention_days = 7
+      transaction_log_retention_days = var.db_transaction_log_retention_days
 
       backup_retention_settings {
         retained_backups = var.db_backup_retention_count
@@ -33,19 +51,6 @@ resource "google_sql_database_instance" "postgres" {
       private_network                               = google_compute_network.main.id
       allocated_ip_range                            = google_compute_global_address.private_services.name
       enable_private_path_for_google_cloud_services = true
-    }
-
-    maintenance_window {
-      day          = 7
-      hour         = 3
-      update_track = "stable"
-    }
-
-    insights_config {
-      query_insights_enabled  = true
-      query_string_length     = 1024
-      record_application_tags = true
-      record_client_address   = false
     }
 
     user_labels = local.labels
@@ -63,7 +68,7 @@ resource "google_sql_database" "app" {
 }
 
 resource "google_sql_user" "app" {
-  name     = var.db_user
+  name     = local.db_username
   instance = google_sql_database_instance.postgres.name
   password = random_password.database.result
 }
@@ -92,4 +97,3 @@ resource "google_secret_manager_secret_version" "database_credentials" {
     username = google_sql_user.app.name
   })
 }
-

@@ -96,4 +96,4 @@ add_text_parameter "nvidia-api-key" "NVIDIA API key"
 add_text_parameter "mistral-api-key" "Mistral API key"
 add_text_parameter "cloudinary-api-secret" "Cloudinary API secret"
 
-echo "All manually managed production parameters were populated."
+echo "All manually managed parameters were populated."

@@ -6,7 +6,7 @@ set -euo pipefail
 : "${GCS_BUCKET:?GCS_BUCKET is required}"
 : "${GCS_OBJECT:?GCS_OBJECT is required}"
 
-APP_ENV="${APP_ENV:-production}"
+APP_ENV="${APP_ENV:-$(curl -fsS -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/attributes/app-environment 2>/dev/null || echo production)}"
 GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT:-$(curl -fsS -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/project/project-id)}"
 PARAMETER_LOCATION="${PARAMETER_LOCATION:-global}"
 APP_DIR="/opt/app/${SERVICE_NAME}"
