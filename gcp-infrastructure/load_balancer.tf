@@ -149,9 +149,17 @@ resource "google_compute_url_map" "apps" {
       }
     }
 
-    path_rule {
-      paths   = ["/core", "/core/*"]
-      service = google_compute_backend_service.core.id
+    route_rules {
+      priority = 50
+      service  = google_compute_backend_service.core.id
+
+      match_rules {
+        full_path_match = "/core"
+      }
+
+      match_rules {
+        prefix_match = "/core/"
+      }
     }
   }
 }
