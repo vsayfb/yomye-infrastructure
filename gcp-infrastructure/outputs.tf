@@ -3,6 +3,11 @@ output "load_balancer_ip" {
   value       = google_compute_global_address.load_balancer.address
 }
 
+output "nat_ip" {
+  description = "Stable public source IP used by private workloads for outbound traffic."
+  value       = google_compute_address.nat.address
+}
+
 output "project_id" {
   description = "Google Cloud project containing the production environment."
   value       = var.project_id

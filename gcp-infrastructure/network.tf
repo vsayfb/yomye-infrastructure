@@ -30,6 +30,14 @@ resource "google_compute_router" "main" {
   network = google_compute_network.main.id
 }
 
+resource "google_compute_address" "nat" {
+  name         = "${local.resource_prefix}-nat"
+  region       = var.region
+  address_type = "EXTERNAL"
+
+  depends_on = [google_project_service.required["compute.googleapis.com"]]
+}
+
 # Managed Cloud NAT is the GCP-native equivalent of the AWS t3.micro NAT
 # instance. It avoids maintaining an extra VM and is cheaper for this footprint
 # at low-to-moderate NAT traffic volumes.
@@ -37,7 +45,8 @@ resource "google_compute_router_nat" "main" {
   name                               = "${local.resource_prefix}-nat"
   region                             = var.region
   router                             = google_compute_router.main.name
-  nat_ip_allocate_option             = "AUTO_ONLY"
+  nat_ip_allocate_option             = "MANUAL_ONLY"
+  nat_ips                            = [google_compute_address.nat.self_link]
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
 
   subnetwork {
