@@ -1,99 +1,129 @@
-#!/bin/bash
-set -euo pipefail
+#!/usr/bin/env bash
+
+set -e
 
 if ! command -v gcloud >/dev/null 2>&1; then
-    echo "gcloud is required." >&2
-    exit 1
+  printf 'gcloud is required.\n' >&2
+  exit 1
 fi
 
 if ! command -v jq >/dev/null 2>&1; then
-    echo "jq is required to validate Firebase credentials." >&2
-    exit 1
+  printf 'jq is required to validate Firebase credentials.\n' >&2
+  exit 1
 fi
 
 PROJECT_ID="${1:-$(gcloud config get-value project 2>/dev/null)}"
+START_AT="${START_AT:-}"
+reached_start=false
 
-if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "(unset)" ]; then
-    echo "Set a gcloud project or pass the project ID as the first argument." >&2
-    exit 1
+if [[ -z $PROJECT_ID || $PROJECT_ID == "(unset)" ]]; then
+  printf 'Set a gcloud project or pass the project ID as the first argument.\n' >&2
+  exit 1
 fi
 
-add_text_parameter() {
-    local parameter_name="$1"
-    local label="$2"
-    local value
-    local version_id
+should_prompt() {
+  local label="$1"
 
-    if ! gcloud parametermanager parameters describe "$parameter_name" \
-        --project "$PROJECT_ID" \
-        --location global >/dev/null 2>&1; then
-        echo "Parameter $parameter_name does not exist; apply Terraform first." >&2
-        exit 1
-    fi
+  if [[ -z $START_AT ]]; then
+    return 0
+  fi
+  if [[ $label == "$START_AT" ]]; then
+    reached_start=true
+  fi
 
-    while true; do
-        read -r -s -p "Enter ${label}: " value
-        echo
-        [ -n "$value" ] && break
-        echo "Value cannot be empty."
-    done
-
-    version_id="manual-$(date -u +%Y%m%d%H%M%S)-${RANDOM}"
-    printf '%s' "$value" \
-        | gcloud parametermanager parameters versions create "$version_id" \
-            --parameter "$parameter_name" \
-            --project "$PROJECT_ID" \
-            --location global \
-            --payload-data-from-file /dev/stdin >/dev/null
-    unset value
-    echo "Added a new version to $parameter_name."
+  [[ $reached_start == true ]]
 }
 
-add_firebase_credentials() {
-    local parameter_name="firebase-credentials"
-    local credentials_path
-    local version_id
+put_secret() {
+  local parameter_name="$1"
+  local label="$2"
+  local value
+  local version_id
 
-    if ! gcloud parametermanager parameters describe "$parameter_name" \
-        --project "$PROJECT_ID" \
-        --location global >/dev/null 2>&1; then
-        echo "Parameter $parameter_name does not exist; apply Terraform first." >&2
-        exit 1
-    fi
+  should_prompt "$label" || return 0
 
-    while true; do
-        read -r -p "Enter the path to the Firebase credentials JSON file: " credentials_path
-        [ -f "$credentials_path" ] && [ -r "$credentials_path" ] && break
-        echo "File does not exist or is not readable: $credentials_path" >&2
-    done
+  read -r -s -p "Enter ${label} (leave empty to skip): " value
+  printf '\n'
 
-    if ! jq -e . "$credentials_path" >/dev/null; then
-        echo "$credentials_path is not valid JSON." >&2
-        exit 1
-    fi
+  if [[ -z $value ]]; then
+    printf 'Skipped %s.\n\n' "$parameter_name"
+    return 0
+  fi
 
-    version_id="manual-$(date -u +%Y%m%d%H%M%S)-${RANDOM}"
-    gcloud parametermanager parameters versions create "$version_id" \
-        --parameter "$parameter_name" \
-        --project "$PROJECT_ID" \
-        --location global \
-        --payload-data-from-file "$credentials_path" >/dev/null
-    echo "Added the file as a new version of $parameter_name."
+  version_id="manual-$(date -u +%Y%m%d%H%M%S)-${RANDOM}"
+  printf '%s' "$value" \
+    | gcloud parametermanager parameters versions create "$version_id" \
+      --parameter "$parameter_name" \
+      --project "$PROJECT_ID" \
+      --location global \
+      --payload-data-from-file /dev/stdin >/dev/null
+
+  unset value
+  printf 'Stored %s.\n\n' "$parameter_name"
 }
 
-echo "Populating Parameter Manager in project $PROJECT_ID."
-echo "Typed values are hidden and passed through stdin, not command arguments."
+put_firebase_credentials() {
+  local parameter_name="firebase-credentials"
+  local credentials_path
+  local credentials_json
+  local version_id
 
-add_text_parameter "otlp-auth-token" "Grafana OpAMP authorization value"
-add_text_parameter "otlp-write-key" "Grafana Cloud OTLP write key"
-add_firebase_credentials
-add_text_parameter "jwt-secret" "JWT signing secret"
-add_text_parameter "mongo-db-uri" "MongoDB connection URI"
-add_text_parameter "groq-api-key" "Groq API key"
-add_text_parameter "gemini-api-key" "Gemini API key"
-add_text_parameter "open_router-api-key" "OpenRouter API key"
-add_text_parameter "nvidia-api-key" "NVIDIA API key"
-add_text_parameter "mistral-api-key" "Mistral API key"
-add_text_parameter "cloudinary-api-secret" "Cloudinary API secret"
+  should_prompt "FIREBASE_CREDENTIALS_PATH" || return 0
 
-echo "All manually managed parameters were populated."
+  while true; do
+    read -r -p 'Enter FIREBASE_CREDENTIALS_PATH (leave empty to skip): ' credentials_path
+
+    if [[ -z $credentials_path ]]; then
+      printf 'Skipped %s.\n\n' "$parameter_name"
+      return 0
+    fi
+
+    if [[ -f $credentials_path && -r $credentials_path ]]; then
+      break
+    fi
+
+    printf 'File does not exist or is not readable: %s\n' "$credentials_path" >&2
+  done
+
+  credentials_json="$(<"$credentials_path")"
+  if [[ -z $credentials_json ]]; then
+    printf 'Firebase credentials file is empty.\n' >&2
+    exit 1
+  fi
+  if ! printf '%s' "$credentials_json" | jq -e . >/dev/null; then
+    printf 'Firebase credentials file is not valid JSON.\n' >&2
+    exit 1
+  fi
+
+  version_id="manual-$(date -u +%Y%m%d%H%M%S)-${RANDOM}"
+  printf '%s' "$credentials_json" \
+    | gcloud parametermanager parameters versions create "$version_id" \
+      --parameter "$parameter_name" \
+      --project "$PROJECT_ID" \
+      --location global \
+      --payload-data-from-file /dev/stdin >/dev/null
+
+  unset credentials_json
+  printf 'Stored %s.\n\n' "$parameter_name"
+}
+
+printf 'Populating Parameter Manager in project %s.\n\n' "$PROJECT_ID"
+
+put_secret "otlp-auth-token" "OPAMP_AUTH_TOKEN"
+put_secret "otlp-write-key" "OTLP_WRITE_KEY"
+put_firebase_credentials
+put_secret "jwt-secret" "JWT_SECRET"
+put_secret "mongo-db-uri" "MONGO_DB_URI"
+put_secret "groq-api-key" "GROQ_API_KEY"
+put_secret "gemini-api-key" "GEMINI_API_KEY"
+put_secret "open-router-api-key" "OPEN_ROUTER_API_KEY"
+put_secret "nvidia-api-key" "NVIDIA_API_KEY"
+put_secret "mistral-api-key" "MISTRAL_API_KEY"
+put_secret "cloudinary-api-secret" "CLOUDINARY_API_SECRET"
+
+if [[ -n $START_AT && $reached_start == false ]]; then
+  printf 'Unknown START_AT value: %s\n' "$START_AT" >&2
+  exit 1
+fi
+
+printf 'All manually managed parameters were populated.\n'
