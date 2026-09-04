@@ -168,11 +168,42 @@ resource "google_compute_global_address" "load_balancer" {
   name = "${local.resource_prefix}-lb"
 }
 
-# The current AWS ALB exposes a single HTTP listener. Keep the GCP baseline
-# equivalent; TLS can be layered on later without changing application backends.
+resource "google_compute_managed_ssl_certificate" "apps" {
+  name = "${local.resource_prefix}-apps"
+
+  managed {
+    domains = [var.api_domain]
+  }
+}
+
+resource "google_compute_target_https_proxy" "apps" {
+  name             = "${local.resource_prefix}-https"
+  url_map          = google_compute_url_map.apps.id
+  ssl_certificates = [google_compute_managed_ssl_certificate.apps.id]
+}
+
+resource "google_compute_global_forwarding_rule" "https" {
+  name                  = "${local.resource_prefix}-https"
+  ip_address            = google_compute_global_address.load_balancer.id
+  ip_protocol           = "TCP"
+  port_range            = "443"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  target                = google_compute_target_https_proxy.apps.id
+}
+
+resource "google_compute_url_map" "http_redirect" {
+  name = "${local.resource_prefix}-http-redirect"
+
+  default_url_redirect {
+    https_redirect         = true
+    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
+    strip_query            = false
+  }
+}
+
 resource "google_compute_target_http_proxy" "apps" {
   name    = "${local.resource_prefix}-http"
-  url_map = google_compute_url_map.apps.id
+  url_map = google_compute_url_map.http_redirect.id
 }
 
 resource "google_compute_global_forwarding_rule" "http" {

@@ -32,7 +32,10 @@ Cloud NAT is retained instead of creating a NAT VM. It provides the same outboun
 
 Compute Engine uses zonal managed instance groups with a target size of one rather than standalone instances. This preserves the single-instance AWS footprint while keeping the existing deployment and replacement workflow. It does not create active-active HA.
 
-The load balancer is HTTP-only by default because the current AWS ALB has one HTTP listener. Add managed TLS later when the public DNS name is settled; doing so is intentionally outside this parity baseline.
+The load balancer terminates TLS for `api_domain` with a Google-managed
+certificate and redirects HTTP requests to HTTPS. Its DNS-only A record must
+point directly to the `load_balancer_ip` output before Google can provision the
+certificate.
 
 VPC flow logs, Cloud NAT logs, and load-balancer request logs are disabled by default because the current AWS Terraform does not enable equivalent access/flow logging. They can be turned on independently with variables when needed.
 
@@ -126,7 +129,7 @@ This production baseline intentionally starts with the current small AWS staging
 - move Core/Chat and Worker to larger machine types as observed load requires;
 - move Cloud SQL from shared-core zonal to a dedicated-core regional HA tier;
 - consider multi-zone application capacity;
-- enable HTTPS and a managed certificate;
+- keep the managed certificate and DNS record healthy;
 - enable deletion protection;
 - increase database backup/PITR retention;
 - enable the logging signals needed for incident response and audit requirements.

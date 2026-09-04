@@ -18,7 +18,16 @@ output "region" {
 }
 
 output "application_url" {
-  value = "http://${google_compute_global_address.load_balancer.address}"
+  value = "https://${var.api_domain}"
+}
+
+output "api_dns_record" {
+  description = "Create this DNS-only A record before waiting for the Google-managed certificate."
+  value = {
+    name  = var.api_domain
+    type  = "A"
+    value = google_compute_global_address.load_balancer.address
+  }
 }
 
 output "core_chat_instance_group" {

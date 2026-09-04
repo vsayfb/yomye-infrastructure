@@ -5,6 +5,7 @@ zone       = "europe-west3-a"
 
 name_prefix = "yevmiye"
 environment = "production"
+api_domain  = "api.yomye.me"
 
 # AWS-equivalent baseline sizing. These are already the defaults, but keeping
 # them explicit here makes the intended parity clear.
@@ -44,7 +45,7 @@ db_name = "yevmiye"
 
 google_client_id   = "replace-me.apps.googleusercontent.com"
 mongo_db_name      = "yevmiye"
-ws_allowed_origins = "http://replace-me.example.com"
+ws_allowed_origins = "https://yomye.me,https://www.yomye.me"
 
 grafana_cloud_opamp_endpoint = "https://replace-me.grafana.net" # Base URL only; /v1/opamp is added by the bootstrap script.
 grafana_cloud_otlp_endpoint  = "https://replace-me.grafana.net/otlp"

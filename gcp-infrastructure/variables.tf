@@ -20,6 +20,16 @@ variable "name_prefix" {
   default = "yevmiye"
 }
 
+variable "api_domain" {
+  description = "Public DNS hostname for the HTTPS application load balancer."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$", var.api_domain))
+    error_message = "api_domain must be a hostname without a scheme, port, or path."
+  }
+}
+
 variable "environment" {
   description = "Application environment label. This Terraform root deploys the GCP production environment."
   type        = string
