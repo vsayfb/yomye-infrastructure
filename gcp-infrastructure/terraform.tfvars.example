@@ -46,7 +46,7 @@ google_client_id   = "replace-me.apps.googleusercontent.com"
 mongo_db_name      = "yevmiye"
 ws_allowed_origins = "http://replace-me.example.com"
 
-grafana_cloud_opamp_endpoint = "https://replace-me.grafana.net"
+grafana_cloud_opamp_endpoint = "https://replace-me.grafana.net" # Base URL only; /v1/opamp is added by the bootstrap script.
 grafana_cloud_otlp_endpoint  = "https://replace-me.grafana.net/otlp"
 
 groq_ai_endpoint        = ""

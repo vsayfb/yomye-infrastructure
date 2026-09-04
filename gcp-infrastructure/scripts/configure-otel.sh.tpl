@@ -22,11 +22,13 @@ set +x
 OPAMP_ENDPOINT="$(parameter_value grafana-cloud-opamp-endpoint)"
 OPAMP_AUTH_TOKEN="$(parameter_value otlp-auth-token)"
 OTLP_WRITE_KEY="$(parameter_value otlp-write-key)"
+OPAMP_ENDPOINT="$${OPAMP_ENDPOINT%/}"
+OPAMP_ENDPOINT="$${OPAMP_ENDPOINT%/v1/opamp}"
 
 umask 077
 cat >/opt/otel/supervisor.yaml <<EOF_SUPERVISOR
 server:
-  endpoint: "$${OPAMP_ENDPOINT%/}/v1/opamp"
+  endpoint: "$OPAMP_ENDPOINT/v1/opamp"
   headers:
     Authorization: "Basic $OPAMP_AUTH_TOKEN"
 
