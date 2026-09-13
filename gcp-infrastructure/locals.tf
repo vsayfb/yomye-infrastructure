@@ -30,6 +30,7 @@ locals {
     "cloudinary-api-secret",
     "firebase-credentials",
     "gemini-api-key",
+    "geonames-username",
     "groq-api-key",
     "jwt-secret",
     "mistral-api-key",
