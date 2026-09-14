@@ -35,18 +35,22 @@ locals {
   })
 }
 
-resource "google_compute_instance_template" "core_chat" {
-  name_prefix  = "${local.resource_prefix}-core-chat-"
-  machine_type = var.core_chat_machine_type
-  tags         = ["${local.resource_prefix}-core-chat"]
-  labels       = merge(local.labels, { service = "core-chat" })
+resource "google_compute_instance" "core_chat" {
+  name                = "${local.resource_prefix}-core-chat"
+  zone                = var.zone
+  machine_type        = var.core_chat_machine_type
+  deletion_protection = true
+  tags                = ["${local.resource_prefix}-core-chat"]
+  labels              = merge(local.labels, { service = "core-chat" })
 
-  disk {
-    source_image = data.google_compute_image.debian.self_link
-    auto_delete  = true
-    boot         = true
-    disk_size_gb = var.core_chat_boot_disk_size_gb
-    disk_type    = "pd-balanced"
+  boot_disk {
+    auto_delete = true
+
+    initialize_params {
+      image = data.google_compute_image.debian.self_link
+      size  = var.core_chat_boot_disk_size_gb
+      type  = "pd-balanced"
+    }
   }
 
   network_interface {
@@ -71,27 +75,32 @@ resource "google_compute_instance_template" "core_chat" {
     enable_integrity_monitoring = true
   }
 
-  can_ip_forward = false
+  can_ip_forward            = false
+  allow_stopping_for_update = true
 
   lifecycle {
-    create_before_destroy = true
+    prevent_destroy = true
   }
 
   depends_on = [google_compute_router_nat.main]
 }
 
-resource "google_compute_instance_template" "worker" {
-  name_prefix  = "${local.resource_prefix}-worker-"
-  machine_type = var.worker_machine_type
-  tags         = ["${local.resource_prefix}-worker"]
-  labels       = merge(local.labels, { service = "worker" })
+resource "google_compute_instance" "worker" {
+  name                = "${local.resource_prefix}-worker"
+  zone                = var.zone
+  machine_type        = var.worker_machine_type
+  deletion_protection = true
+  tags                = ["${local.resource_prefix}-worker"]
+  labels              = merge(local.labels, { service = "worker" })
 
-  disk {
-    source_image = data.google_compute_image.debian.self_link
-    auto_delete  = true
-    boot         = true
-    disk_size_gb = var.worker_boot_disk_size_gb
-    disk_type    = "pd-balanced"
+  boot_disk {
+    auto_delete = true
+
+    initialize_params {
+      image = data.google_compute_image.debian.self_link
+      size  = var.worker_boot_disk_size_gb
+      type  = "pd-balanced"
+    }
   }
 
   network_interface {
@@ -116,24 +125,20 @@ resource "google_compute_instance_template" "worker" {
     enable_integrity_monitoring = true
   }
 
-  can_ip_forward = false
+  can_ip_forward            = false
+  allow_stopping_for_update = true
 
   lifecycle {
-    create_before_destroy = true
+    prevent_destroy = true
   }
 
   depends_on = [google_compute_router_nat.main]
 }
 
-resource "google_compute_instance_group_manager" "core_chat" {
-  name               = "${local.resource_prefix}-core-chat"
-  zone               = var.zone
-  base_instance_name = "${local.resource_prefix}-core-chat"
-  target_size        = 1
-
-  version {
-    instance_template = google_compute_instance_template.core_chat.id
-  }
+resource "google_compute_instance_group" "core_chat" {
+  name      = "${local.resource_prefix}-core-chat-backend"
+  zone      = var.zone
+  instances = [google_compute_instance.core_chat.self_link]
 
   named_port {
     name = "core"
@@ -145,30 +150,4 @@ resource "google_compute_instance_group_manager" "core_chat" {
     port = var.chat_port
   }
 
-  update_policy {
-    type                           = "PROACTIVE"
-    minimal_action                 = "REPLACE"
-    most_disruptive_allowed_action = "REPLACE"
-    max_surge_fixed                = 1
-    replacement_method             = "SUBSTITUTE"
-  }
-}
-
-resource "google_compute_instance_group_manager" "worker" {
-  name               = "${local.resource_prefix}-worker"
-  zone               = var.zone
-  base_instance_name = "${local.resource_prefix}-worker"
-  target_size        = 1
-
-  version {
-    instance_template = google_compute_instance_template.worker.id
-  }
-
-  update_policy {
-    type                           = "PROACTIVE"
-    minimal_action                 = "REPLACE"
-    most_disruptive_allowed_action = "REPLACE"
-    max_surge_fixed                = 1
-    replacement_method             = "SUBSTITUTE"
-  }
 }

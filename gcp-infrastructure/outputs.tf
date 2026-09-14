@@ -30,12 +30,14 @@ output "api_dns_record" {
   }
 }
 
-output "core_chat_instance_group" {
-  value = google_compute_instance_group_manager.core_chat.name
+output "core_chat_instance" {
+  description = "Persistent Compute Engine instance hosting Core and Chat."
+  value       = google_compute_instance.core_chat.name
 }
 
-output "worker_instance_group" {
-  value = google_compute_instance_group_manager.worker.name
+output "worker_instance" {
+  description = "Persistent Compute Engine instance hosting the categorization Worker."
+  value       = google_compute_instance.worker.name
 }
 
 output "compute_zone" {

@@ -35,7 +35,7 @@ resource "google_compute_backend_service" "core" {
   health_checks         = [google_compute_health_check.core.id]
 
   backend {
-    group           = google_compute_instance_group_manager.core_chat.instance_group
+    group           = google_compute_instance_group.core_chat.self_link
     balancing_mode  = "UTILIZATION"
     max_utilization = 0.8
     capacity_scaler = 1.0
@@ -60,7 +60,7 @@ resource "google_compute_backend_service" "chat" {
   health_checks         = [google_compute_health_check.chat.id]
 
   backend {
-    group           = google_compute_instance_group_manager.core_chat.instance_group
+    group           = google_compute_instance_group.core_chat.self_link
     balancing_mode  = "UTILIZATION"
     max_utilization = 0.8
     capacity_scaler = 1.0

@@ -9,7 +9,7 @@ This GCP root was adjusted to mirror the current AWS staging footprint rather th
 - Added one explicit compute zone (`europe-west3-a`) to mirror AWS real compute in one AZ.
 - Core/Chat changed from `e2-medium` to `e2-small`.
 - Worker changed from `e2-standard-2` to `e2-small`.
-- Core/Chat and Worker changed from regional managed instance groups to zonal managed instance groups, each with target size 1.
+- Core/Chat and Worker use fixed zonal Compute Engine instances protected from deletion and Terraform replacement. Core/Chat is attached to an unmanaged load-balancer instance group.
 - Core/Chat boot disk changed from 20 GB to 10 GB balanced PD.
 - Worker boot disk changed from 30 GB to 10 GB balanced PD.
 - Worker still installs Ollama and `all-minilm:l12-v2`, matching the AWS worker bootstrap.
@@ -57,6 +57,6 @@ This GCP root was adjusted to mirror the current AWS staging footprint rather th
 - Checked all Terraform variable references against declarations.
 - Checked Terraform resource/data references against declarations.
 - Checked HCL delimiter balance across all Terraform and example tfvars files.
-- Verified old regional MIG, managed-certificate, HTTPS-proxy, and regional Cloud SQL constructs are absent.
+- Verified managed instance groups, managed-certificate, HTTPS-proxy, and regional Cloud SQL constructs are absent.
 
-A full `terraform validate`/`plan` still requires Terraform plus authenticated access to the target GCP project and provider downloads; those were not available in the execution environment used to edit this package.
+Terraform validation and an authenticated production plan were run for the persistent-VM migration.

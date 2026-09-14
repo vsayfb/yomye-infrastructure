@@ -30,7 +30,7 @@ The GCP project is treated as the environment boundary. Resource names therefore
 
 Cloud NAT is retained instead of creating a NAT VM. It provides the same outbound-only role for the private application hosts without OS patching or a single-purpose VM. At this small footprint it is generally the better GCP implementation; NAT data processing remains usage-based.
 
-Compute Engine uses zonal managed instance groups with a target size of one rather than standalone instances. This preserves the single-instance AWS footprint while keeping the existing deployment and replacement workflow. It does not create active-active HA.
+Compute Engine uses one persistent Core/Chat VM and one persistent Worker VM. Both have GCP deletion protection and Terraform `prevent_destroy`; an infrastructure change that would require replacement fails instead of rotating either host. An unmanaged instance group attaches the Core/Chat VM to the load balancer but does not own or recreate it.
 
 The load balancer terminates TLS for `api_domain` with a Google-managed
 certificate and redirects HTTP requests to HTTPS. Its DNS-only A record must
@@ -117,7 +117,7 @@ Set the production GitHub environment variables from Terraform outputs:
 - `GCP_PROJECT_ID` = the production project ID
 - `GCP_REGION` = the selected region
 - `GCP_ZONE` = `compute_zone`
-- `GCP_CORE_CHAT_INSTANCE_GROUP` = `core_chat_instance_group`
+- `GCP_CORE_CHAT_INSTANCE` = `core_chat_instance`
 - `GCS_DEPLOY_BUCKET` = `app_deployments_bucket`
 
 Deployment jobs should declare the environment configured in `github_environment` (default `production`) and request `id-token: write` plus `contents: read` permissions.
