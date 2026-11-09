@@ -13,7 +13,7 @@ The environments use the same application contracts, but they do not share datab
 
 ![Yömye application architecture](https://vsay.site/projects/yomye-me/44444b9a-a331-4203-8e9f-b610a8c895e5-yomye-architecture.png)
 
-More details are available on the [Yömye project page](https://vsay.site/projects/yomye-me/).
+[How Yömye works](https://vsay.site/projects/yomye-me/)
 
 ## Repository layout
 

@@ -13,7 +13,7 @@ Bu repoda Yömye’nin cloud altyapısı tanımlanır. Terraform ile iki ayrı e
 
 ![Yömye uygulama mimarisi](https://vsay.site/projects/yomye-me/44444b9a-a331-4203-8e9f-b610a8c895e5-yomye-architecture.png)
 
-Daha fazlası için [Yömye proje sayfasına](https://vsay.site/projects/yomye-me/) bakılabilir.
+[Yömye nasıl çalışıyor?](https://vsay.site/projects/yomye-me/)
 
 ## Repo yapısı
 
