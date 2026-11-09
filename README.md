@@ -62,7 +62,7 @@ Environment yönetiminde aşağıdaki scriptler kullanılır. Yollar `aws-infras
 | `scripts/staging-compute.sh` | Staging sunucuları ve veritabanı başlatılır, durdurulur veya durumları görüntülenir |
 | `scripts/connect_rds.sh` | AWS Systems Manager üzerinden private RDS’e yerel erişim sağlanır |
 | `scripts/rotate-rds-credentials.sh` | RDS credentials rotate edilir |
-| `scripts/empty-environment-buckets.sh` | Destroy öncesinde deployment bucket’ları boşaltılır |
+| `scripts/empty-environment-buckets.sh` | Destroy öncesinde deployment bucket’ları temizlenir |
 
 ## GCP production
 
