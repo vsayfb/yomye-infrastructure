@@ -9,6 +9,10 @@ This repository contains the cloud infrastructure for Yömye. Terraform is used 
 
 The environments use the same application contracts, but they do not share databases, queues, secrets, deployment files, identities, or Terraform state.
 
+## Architecture
+
+![Yömye application architecture](https://vsay.site/projects/yomye-me/44444b9a-a331-4203-8e9f-b610a8c895e5-yomye-architecture.png)
+
 ## Repository layout
 
 ```text

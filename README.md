@@ -9,6 +9,10 @@ Bu repoda Yömye’nin cloud altyapısı tanımlanır. Terraform ile iki ayrı e
 
 İki environment’ta da aynı uygulama contract’ları kullanılır. Her environment’ın veritabanı, queue’ları, secret’ları, deployment dosyaları, erişim rolleri ve Terraform state’i ayrı tutulur.
 
+## Mimari
+
+![Yömye uygulama mimarisi](https://vsay.site/projects/yomye-me/44444b9a-a331-4203-8e9f-b610a8c895e5-yomye-architecture.png)
+
 ## Repo yapısı
 
 ```text
