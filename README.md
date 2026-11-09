@@ -1,117 +1,102 @@
-# Yömye infrastructure
+# Yömye altyapısı
 
-This repository contains the cloud infrastructure for Yömye. Terraform is used to manage two separate environments:
+Türkçe · [English](./README.en.md)
 
-- [AWS staging](./aws-infrastructure/), where changes are tested with real cloud services before release;
-- [GCP production](./gcp-infrastructure/), where the live backend runs.
+Bu repoda Yömye’nin cloud altyapısı tanımlanır. Terraform ile iki ayrı environment yönetilir.
 
-The environments use the same application contracts, but they do not share databases, queues, secrets, deployment files, identities, or Terraform state.
+- [AWS staging](./aws-infrastructure/) environment’ında değişiklikler yayına alınmadan önce gerçek cloud servisleriyle test edilir.
+- [GCP production](./gcp-infrastructure/) environment’ında canlı backend barındırılır.
 
-## Repository layout
+İki environment’ta da aynı uygulama contract’ları kullanılır. Her environment’ın veritabanı, queue’ları, secret’ları, deployment dosyaları, erişim rolleri ve Terraform state’i ayrı tutulur.
+
+## Repo yapısı
 
 ```text
 .
-├── aws-infrastructure/     AWS staging Terraform and operations scripts
-│   ├── bootstrap/          Remote-state bucket setup
-│   ├── environment/prod/   Staging environment root; the old path name is kept
-│   ├── modules/            AWS network, data, compute, Lambda, and deploy modules
-│   └── scripts/            Staging setup and operations tools
-└── gcp-infrastructure/     GCP production Terraform and operations scripts
-    ├── bootstrap/          Remote-state bucket setup
-    └── scripts/            Production setup and database access tools
+├── aws-infrastructure/     AWS staging için Terraform dosyaları ve yönetim scriptleri
+│   ├── bootstrap/          Remote state bucket kurulumu
+│   ├── environment/prod/   Staging environment root dizini
+│   ├── modules/            Network, data, compute, Lambda ve deployment modülleri
+│   └── scripts/            Staging kurulumu ve yönetimi
+└── gcp-infrastructure/     GCP production için Terraform dosyaları ve yönetim scriptleri
+    ├── bootstrap/          Remote state bucket kurulumu
+    └── scripts/            Production kurulumu ve veritabanı erişimi
 ```
 
-`aws-infrastructure/environment/prod` is the AWS staging Terraform root. The directory name is historical. Its application environment and GitHub environment are both `staging`.
+AWS staging için `aws-infrastructure/environment/prod` dizini kullanılır. Uygulama environment’ı ve GitHub environment değeri `staging` olarak tanımlanır.
 
-## Environment comparison
+## Environment karşılaştırması
 
-| Area | AWS staging | GCP production |
+| Bileşen | AWS staging | GCP production |
 | --- | --- | --- |
-| Public entry | Application Load Balancer | Global HTTPS Load Balancer |
-| Core and Chat | One private EC2 VM | One persistent Compute Engine VM |
-| Worker | Separate private EC2 VM with Ollama | Separate persistent Compute Engine VM with Ollama |
+| Ingress | Application Load Balancer | Global HTTPS Load Balancer |
+| Core ve Chat | Private ağda bir EC2 VM | Kalıcı bir Compute Engine VM |
+| Worker | Ollama çalıştıran ayrı bir private EC2 VM | Ollama çalıştıran ayrı ve kalıcı bir Compute Engine VM |
 | PostgreSQL | Amazon RDS | Cloud SQL |
-| Events | SQS | Pub/Sub |
+| Messaging | SQS | Pub/Sub |
 | Notification | AWS Lambda | Cloud Run |
 | Configuration | Systems Manager Parameter Store | Parameter Manager |
-| Secrets | AWS Secrets Manager and secure parameters | Secret Manager and manual parameter versions |
-| Deployment storage | Private S3 buckets | Private GCS buckets and Artifact Registry |
-| GitHub identity | AWS OIDC deployment role | Workload Identity Federation |
+| Secret yönetimi | AWS Secrets Manager ve secure parameter’lar | Secret Manager ve manual parameter sürümleri |
+| Deployment storage | Private S3 bucket’ları | Private GCS bucket’ları ve Artifact Registry |
+| GitHub deployment identity | AWS OIDC deployment role | Workload Identity Federation |
 
 ## AWS staging
 
-AWS staging is managed from `aws-infrastructure/environment/prod`.
+AWS environment’ı `aws-infrastructure/environment/prod` dizininden yönetilir. Terraform modülleriyle aşağıdaki kaynaklar oluşturulur.
 
-The main Terraform modules create:
+- VPC, load balancer için public subnet’ler, uygulama için private subnet ve NAT instance
+- Core/Chat için bir EC2 VM ve Worker için ayrı bir EC2 VM
+- Private RDS PostgreSQL
+- Category, Chat ve Notification için SQS queue’ları
+- Notification Lambda
+- Deployment dosyaları için S3 bucket’ları
+- Parameter Store, Secrets Manager erişimi ve servislerin IAM rolleri
+- GitHub Actions için OIDC deployment role
+- Grafana Cloud’a veri gönderen OpenTelemetry Collector yapılandırması
 
-- the VPC, public load-balancer subnets, private application subnet, and NAT instance;
-- one Core/Chat EC2 VM and one Worker EC2 VM;
-- private RDS PostgreSQL;
-- category, chat, and notification SQS queues;
-- the Notification Lambda;
-- S3 deployment buckets;
-- Parameter Store, Secrets Manager access, and workload IAM roles;
-- the GitHub Actions OIDC deployment role;
-- OpenTelemetry collector configuration for Grafana Cloud.
+Environment yönetiminde aşağıdaki scriptler kullanılır. Yollar `aws-infrastructure` dizinine göre verilmiştir.
 
-The [AWS GitHub OIDC guide](./aws-infrastructure/GITHUB_OIDC.md) explains the required GitHub `staging` environment and repository trust rules.
-
-Common staging operations are provided through scripts:
-
-| Script | Purpose |
+| Script | İşlev |
 | --- | --- |
-| `scripts/populate-ssm-credentials.sh` | Requests and stores manually managed staging values |
-| `scripts/staging-compute.sh` | Starts, stops, or reports the staging compute and database state |
-| `scripts/connect_rds.sh` | Opens local access to private RDS through AWS Systems Manager |
-| `scripts/rotate-rds-credentials.sh` | Rotates managed database credentials safely |
-| `scripts/empty-environment-buckets.sh` | Empties deployment buckets before an approved destroy operation |
+| `scripts/populate-ssm-credentials.sh` | Manual olarak girilen staging değerleri alınır ve kaydedilir |
+| `scripts/staging-compute.sh` | Staging sunucuları ve veritabanı başlatılır, durdurulur veya durumları görüntülenir |
+| `scripts/connect_rds.sh` | AWS Systems Manager üzerinden private RDS’e yerel erişim sağlanır |
+| `scripts/rotate-rds-credentials.sh` | RDS credentials rotate edilir |
+| `scripts/empty-environment-buckets.sh` | Destroy öncesinde deployment bucket’ları boşaltılır |
 
 ## GCP production
 
-GCP production is managed from `gcp-infrastructure`. Its detailed setup, architecture mapping, bootstrap flow, GitHub variables, and scaling notes are documented in the [GCP production guide](./gcp-infrastructure/README.md).
+Production environment’ı `gcp-infrastructure` dizininden yönetilir. Kurulum adımları, mimari bileşenler, bootstrap süreci, GitHub değişkenleri ve scaling notları [GCP production rehberinde](./gcp-infrastructure/README.md) yer alır.
 
-The production root creates:
+Terraform yapılandırmasıyla aşağıdaki kaynaklar oluşturulur.
 
-- a private VPC, subnet, Cloud Router, and Cloud NAT;
-- a global HTTPS load balancer and managed certificate;
-- one protected Core/Chat VM and one protected Worker VM;
-- private Cloud SQL PostgreSQL;
-- Pub/Sub topics and subscriptions;
-- the Notification Cloud Run service;
-- private GCS deployment buckets and Artifact Registry;
-- Parameter Manager and Secret Manager resources;
-- service accounts and GitHub Workload Identity Federation.
+- Private VPC, subnet, Cloud Router ve Cloud NAT
+- Global HTTPS load balancer ve managed certificate
+- Silinmeye karşı korunan Core/Chat ve Worker VM’leri
+- Private Cloud SQL PostgreSQL
+- Pub/Sub topic ve subscription’ları
+- Notification için Cloud Run servisi
+- Private GCS deployment bucket’ları ve Artifact Registry
+- Parameter Manager ve Secret Manager kaynakları
+- Service account’lar ve GitHub Workload Identity Federation
 
-The Core/Chat and Worker VMs are persistent hosts. Deletion protection and Terraform `prevent_destroy` are used so an ordinary infrastructure change cannot silently replace them.
+Core/Chat ve Worker VM’leri kalıcı sunucular olarak kullanılır. Deletion protection ve Terraform `prevent_destroy` ile bu sunucuların altyapı değişiklikleri sırasında yanlışlıkla silinip yeniden oluşturulması engellenir.
 
-Common production tools include:
+Production tarafındaki script yolları `gcp-infrastructure` dizinine göre verilmiştir.
 
-| Script | Purpose |
+| Script | İşlev |
 | --- | --- |
-| `scripts/populate-parameters.sh` | Requests local input and creates manual Parameter Manager versions |
-| `scripts/connect-postgres.sh` | Opens an IAP tunnel from the local machine to Cloud SQL on port `5432` |
-| `scripts/get-database-credentials.sh` | Reads the current Cloud SQL connection values from Parameter Manager and Secret Manager |
+| `scripts/populate-parameters.sh` | Local input ile Parameter Manager’da manual parameter sürümleri oluşturulur |
+| `scripts/connect-postgres.sh` | Yerel makineden Cloud SQL’e `5432` portu üzerinden erişim için IAP tunnel’ı açılır |
+| `scripts/get-database-credentials.sh` | Güncel Cloud SQL bağlantı bilgileri Parameter Manager ve Secret Manager’dan okunur |
 
 ## Terraform state
 
-AWS staging and GCP production have separate remote-state backends. Each `bootstrap` root creates the storage required by its main Terraform root. A backend must be prepared before the main root is initialized.
+AWS staging ve GCP production için ayrı remote state backend’leri kullanılır. Ana Terraform yapılandırmasının ihtiyaç duyduğu state depolaması, her environment’ın `bootstrap` dizinindeki yapılandırmayla kurulur. Ana dizinde `terraform init` çalıştırılmadan önce backend hazırlanır.
 
-State can contain sensitive values. Access to the state buckets must be limited. State files, local backend files, `.tfvars`, saved plans, `.env` files, and provider credentials must not be committed.
+## Terraform komutları
 
-The repository `.gitignore` excludes common local Terraform and secret files. An ignored file is not automatically safe; it must still be stored and shared carefully.
-
-## Change process
-
-Infrastructure changes should follow this order inside the correct cloud root:
-
-1. Terraform files are formatted.
-2. Configuration is validated.
-3. A saved plan is created for the intended environment.
-4. The plan is reviewed for replacements, deletions, network changes, and secret changes.
-5. The reviewed plan is applied.
-6. Terraform outputs and application readiness are checked.
-
-Example validation commands:
+Formatlama, validation ve plan oluşturma adımları için aşağıdaki komutlar kullanılır.
 
 ```bash
 terraform fmt -recursive
@@ -119,13 +104,4 @@ terraform validate
 terraform plan -out=environment.tfplan
 ```
 
-The AWS root must not be used for production, and the GCP root must not be used for staging. The application deployment workflows deploy binaries or container revisions only. Terraform remains responsible for cloud resources.
-
-## Safety rules
-
-- The correct cloud account, project, region, and Terraform workspace must be confirmed before planning or applying.
-- A plan containing unexpected replacement or deletion must not be applied.
-- Production VM replacement requires a clear manual decision.
-- Real credentials must be entered through the provided scripts or cloud secret systems, not Terraform variables committed to Git.
-- Database tunnels should be closed when their work is complete.
-- Destructive scripts should be used only after their exact environment and targets have been checked.
+AWS dizini staging, GCP dizini production için kullanılır. Deployment workflow’larıyla binary dosyaları veya container revision’ları yayınlanır. Cloud kaynakları Terraform ile yönetilir.
