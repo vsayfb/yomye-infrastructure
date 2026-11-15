@@ -1,0 +1,76 @@
+# AWS staging configuration for Yömye. Copy to terraform.tfvars and replace each placeholder.
+
+project_name = "<project-name>"
+name_prefix  = "<name-prefix>"
+aws_region   = "<aws-region>"
+environment  = "<environment>"
+
+azs = ["<availability-zone-1>", "<availability-zone-2>"]
+
+db_name = "<db-name>"
+
+# Existing SSM SecureString parameter names for staging.
+# Create these parameters with aws-infrastructure/scripts/populate-ssm-credentials.sh
+# before applying Terraform. Use the parameter names created by that script.
+grafana_cloud_opamp_auth_token_parameter_name = "<grafana-cloud-opamp-auth-token-parameter-name>"
+grafana_cloud_otlp_write_key_parameter_name   = "<grafana-cloud-otlp-write-key-parameter-name>"
+firebase_credentials_secret_name              = "<firebase-credentials-secret-name>"
+jwt_secret_name                               = "<jwt-secret-name>"
+mongo_db_uri_secret_name                      = "<mongo-db-uri-secret-name>"
+groq_ai_secret_name                           = "<groq-ai-secret-name>"
+gemini_ai_secret_name                         = "<gemini-ai-secret-name>"
+open_router_ai_secret_name                    = "<open-router-ai-secret-name>"
+nvidia_ai_secret_name                         = "<nvidia-ai-secret-name>"
+mistral_ai_secret_name                        = "<mistral-ai-secret-name>"
+cloudinary_api_secret_name                    = "<cloudinary-api-secret-name>"
+
+# Grafana Cloud endpoints. The OpAMP supervisor appends /v1/opamp.
+grafana_cloud_opamp_endpoint = "<grafana-cloud-opamp-endpoint>"
+grafana_cloud_otlp_endpoint  = "<grafana-cloud-otlp-endpoint>"
+
+# GitHub repositories and environment authorized to deploy through AWS OIDC.
+github_org = "<github-org>"
+github_repos = [
+  "<core-repository>",
+  "<chat-repository>",
+  "<worker-repository>",
+  "<notification-repository>"
+]
+github_repo_env_name = "<github-repo-env-name>"
+
+# Google OAuth client ID used to verify sign-in tokens.
+google_client_id = "<google-client-id>"
+
+# MongoDB database used by Chat.
+mongo_db_name = "<mongo-db-name>"
+
+# AI provider base URLs and model IDs used by Worker.
+groq_ai_endpoint = "<groq-ai-endpoint>"
+groq_ai_model    = "<groq-ai-model>"
+
+gemini_model = "<gemini-model>"
+
+open_router_model    = "<open-router-model>"
+open_router_base_url = "<open-router-base-url>"
+
+nvidia_base_url = "<nvidia-base-url>"
+nvidia_model    = "<nvidia-model>"
+
+mistral_ai_endpoint = "<mistral-ai-endpoint>"
+mistral_ai_model    = "<mistral-ai-model>"
+
+# Cloudinary product environment and API key used by Core.
+cloudinary_api_key    = "<cloudinary-api-key>"
+cloudinary_cloud_name = "<cloudinary-cloud-name>"
+
+# Cloudflare R2 account, credentials, and bucket used for private chat attachments.
+r2_account_id        = "<r2-account-id>"
+r2_access_key_id     = "<r2-access-key-id>"
+r2_secret_access_key = "<r2-secret-access-key>"
+r2_bucket            = "<r2-bucket>"
+
+# ARN of the ACM certificate for the HTTPS load balancer in the selected AWS region.
+alb_certificate_arn = "<alb-certificate-arn>"
+
+# Comma-separated browser origins allowed to connect to Chat over WebSocket.
+ws_allowed_origins = "<ws-allowed-origins>"
