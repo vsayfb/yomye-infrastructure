@@ -38,18 +38,18 @@ google_client_id = "792578760046-fmtg9tlr0fhm73ajuk2l60379ffbkpu6.apps.googleuse
 
 mongo_db_name = "yevmiye" # matches your original local dev DB_NAME - confirm this is still the intended prod DB name, not just copied from dev
 
-groq_ai_endpoint = "" # e.g. https://api.groq.com/openai/v1 - confirm against Groq's actual docs
+groq_ai_endpoint = "https://api.groq.com/openai/v1"
 groq_ai_model    = ""                               # whatever model you're actually calling
 
 gemini_model = "gemini-3.5-flash-lite"
 
 open_router_model    = ""
-open_router_base_url = ""
+open_router_base_url = "https://openrouter.ai/api/v1"
 
 nvidia_base_url = ""
 nvidia_model    = ""
 
-mistral_ai_endpoint = ""
+mistral_ai_endpoint = "https://api.mistral.ai/v1"
 mistral_ai_model    = ""
 
 cloudinary_api_key    = ""
