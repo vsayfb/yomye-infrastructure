@@ -188,3 +188,8 @@ variable "nvidia_ai_secret_read_policy_arn" {
 variable "cloudinary_api_secret_read_policy_arn" {
   type = string
 }
+
+variable "alb_certificate_arn" {
+  description = "ARN of the ACM certificate for the API hostname."
+  type        = string
+}

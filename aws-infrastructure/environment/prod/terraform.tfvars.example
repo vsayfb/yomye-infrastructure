@@ -18,6 +18,7 @@ groq_ai_secret_name                           = "/yevmiye/staging/groq-api-key" 
 gemini_ai_secret_name                         = "/yevmiye/staging/gemini-api-key"       # same
 open_router_ai_secret_name                    = "/yevmiye/staging/open-router-api-key"  # same
 nvidia_ai_secret_name                         = "/yevmiye/staging/nvidia-api-key"       # same
+mistral_ai_secret_name                        = "/yevmiye/staging/mistral-api-key"
 cloudinary_api_secret_name                    = "/yevmiye/staging/cloudinary-api-secret"
 
 # --- Real, non-secret config
@@ -26,10 +27,10 @@ grafana_cloud_otlp_endpoint  = "https://otlp-gateway-prod-eu-west-2.grafana.net/
 
 github_org = "vsayfb"
 github_repos = [
-  "yevmiye-core",
-  "yevmiye-chat",
-  "yevmiye-worker",
-  "yevmiye-notification"
+  "yomye-core",
+  "yomye-chat",
+  "yomye-worker",
+  "yomye-notification"
 ]
 github_repo_env_name = "staging"
 
@@ -58,3 +59,7 @@ r2_account_id        = ""
 r2_access_key_id     = ""
 r2_secret_access_key = ""
 r2_bucket            = ""
+
+alb_certificate_arn = "arn:aws:acm:eu-central-1:ACCOUNT_ID:certificate/CERTIFICATE_ID"
+
+ws_allowed_origins = "https://yomye.me,https://www.yomye.me"

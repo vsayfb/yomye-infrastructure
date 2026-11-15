@@ -210,3 +210,8 @@ variable "ws_allowed_origins" {
   description = "Origins allowed to establish WebSocket connections."
   type        = string
 }
+
+variable "alb_certificate_arn" {
+  description = "ARN of the ACM certificate for the API hostname."
+  type        = string
+}

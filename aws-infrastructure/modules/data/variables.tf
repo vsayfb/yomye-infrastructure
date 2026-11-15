@@ -32,7 +32,7 @@ variable "rds_sg_id" {
 variable "db_engine_version" {
   description = "Postgres engine version. Must be >= 15.2 for pgvector support."
   type        = string
-  default     = "16.9"
+  default     = "16.15"
 }
 
 variable "db_instance_class" {

@@ -55,6 +55,7 @@ module "compute" {
   name_prefix = var.name_prefix
 
   vpc_id                 = module.network.vpc_id
+  alb_certificate_arn    = var.alb_certificate_arn
   alb_subnet_ids         = module.network.public_subnet_ids
   compute_subnet_id      = module.network.compute_subnet_id
   alb_sg_id              = module.network.alb_sg_id
