@@ -16,7 +16,7 @@ jwt_secret_name                               = "/yevmiye/staging/jwt-secret"   
 mongo_db_uri_secret_name                      = "/yevmiye/staging/mongo-db-uri"         # matches what showed in your list-secrets output earlier
 groq_ai_secret_name                           = "/yevmiye/staging/groq-api-key"         # same
 gemini_ai_secret_name                         = "/yevmiye/staging/gemini-api-key"       # same
-open_router_ai_secret_name                    = "/yevmiye/staging/open_router-api-key"  # same
+open_router_ai_secret_name                    = "/yevmiye/staging/open-router-api-key"  # same
 nvidia_ai_secret_name                         = "/yevmiye/staging/nvidia-api-key"       # same
 cloudinary_api_secret_name                    = "/yevmiye/staging/cloudinary-api-secret"
 
